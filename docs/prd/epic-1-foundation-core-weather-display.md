@@ -9,7 +9,7 @@ I want a properly configured monorepo with Angular and NestJS,
 so that I can efficiently develop and deploy both frontend and backend.
 
 **Acceptance Criteria:**
-1. Nx workspace initialized with Angular 19 and NestJS applications
+1. npm workspace monorepo initialized with Angular 20 and NestJS 11 applications
 2. TypeScript path mappings configured for shared interfaces
 3. ESLint and Prettier configured with consistent rules
 4. Jest testing framework configured for both applications
