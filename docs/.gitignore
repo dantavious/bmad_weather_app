@@ -1,0 +1,56 @@
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Build output
+*.log
+*.cache
+.cache/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Generated documentation
+_build/
+_site/
+site/
+
+# Node modules (if docs use any JS tools)
+node_modules/
+
+# Python (if docs use Sphinx or similar)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+
+# Documentation specific
+*.draft.md
+*.wip.md
+.drafts/
+.notes/
+
+# Files to ignore from .ignore directory
+.ignore/
