@@ -14,27 +14,28 @@ describe('RateLimitGuard', () => {
     }),
   };
 
-  const createMockExecutionContext = (ip: string): ExecutionContext => ({
-    switchToHttp: () => ({
-      getRequest: () => ({
-        headers: {},
-        connection: { remoteAddress: ip },
-        socket: { remoteAddress: ip },
+  const createMockExecutionContext = (ip: string): ExecutionContext =>
+    ({
+      switchToHttp: () => ({
+        getRequest: () => ({
+          headers: {},
+          connection: { remoteAddress: ip },
+          socket: { remoteAddress: ip },
+        }),
+        getResponse: () => ({}),
       }),
-      getResponse: () => ({}),
-    }),
-    getClass: () => ({}),
-    getHandler: () => ({}),
-    getArgs: () => [],
-    getArgByIndex: () => ({}),
-    switchToRpc: () => ({} as any),
-    switchToWs: () => ({} as any),
-    getType: () => 'http',
-  } as ExecutionContext);
+      getClass: () => ({}),
+      getHandler: () => ({}),
+      getArgs: () => [],
+      getArgByIndex: () => ({}),
+      switchToRpc: () => ({}) as any,
+      switchToWs: () => ({}) as any,
+      getType: () => 'http',
+    }) as ExecutionContext;
 
   beforeEach(async () => {
     jest.useFakeTimers();
-    
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RateLimitGuard,
@@ -86,7 +87,7 @@ describe('RateLimitGuard', () => {
       }
 
       expect(() => guard.canActivate(context1)).toThrow(HttpException);
-      
+
       expect(guard.canActivate(context2)).toBe(true);
     });
 
@@ -118,8 +119,8 @@ describe('RateLimitGuard', () => {
         getHandler: () => ({}),
         getArgs: () => [],
         getArgByIndex: () => ({}),
-        switchToRpc: () => ({} as any),
-        switchToWs: () => ({} as any),
+        switchToRpc: () => ({}) as any,
+        switchToWs: () => ({}) as any,
         getType: () => 'http',
       } as ExecutionContext;
 
@@ -144,8 +145,8 @@ describe('RateLimitGuard', () => {
         getHandler: () => ({}),
         getArgs: () => [],
         getArgByIndex: () => ({}),
-        switchToRpc: () => ({} as any),
-        switchToWs: () => ({} as any),
+        switchToRpc: () => ({}) as any,
+        switchToWs: () => ({}) as any,
         getType: () => 'http',
       } as ExecutionContext;
 
@@ -162,7 +163,7 @@ describe('RateLimitGuard', () => {
       }
 
       jest.advanceTimersByTime(60001);
-      
+
       jest.advanceTimersByTime(60000);
 
       for (let i = 0; i < 60; i++) {

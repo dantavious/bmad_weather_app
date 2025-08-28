@@ -1,0 +1,418 @@
+# Angular 20 API Reference
+# Complete patterns and examples for Angular 20 development
+
+provider-configuration:
+  description: "Angular 20 provider configuration patterns"
+  
+  application-config:
+    file: "app.config.ts"
+    example: |
+      import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+      import { provideRouter } from '@angular/router';
+      import { provideAnimations } from '@angular/platform-browser/animations';
+      import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
+      
+      export const appConfig: ApplicationConfig = {
+        providers: [
+          provideZoneChangeDetection({ eventCoalescing: true }),
+          provideRouter(routes),
+          provideAnimations(),
+          provideHttpClient(
+            withFetch(),
+            withInterceptors([authInterceptor, loggingInterceptor])
+          ),
+        ]
+      };
+  
+  service-providers:
+    example: |
+      // In component or app config
+      providers: [
+        WeatherService,
+        { provide: API_URL, useValue: 'http://localhost:3000' },
+        { provide: LoggerService, useClass: PinoLoggerService },
+        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+      ]
+  
+  route-providers:
+    example: |
+      import { Routes } from '@angular/router';
+      
+      export const routes: Routes = [
+        {
+          path: 'weather',
+          loadComponent: () => import('./weather/weather.component').then(m => m.WeatherComponent),
+          providers: [WeatherService] // Route-specific providers
+        }
+      ];
+
+injection-context:
+  description: "Proper injection context usage patterns"
+  
+  correct-patterns:
+    field-initializer: |
+      export class WeatherComponent {
+        // CORRECT: Field initializer
+        private weatherService = inject(WeatherService);
+        private http = inject(HttpClient);
+        private router = inject(Router);
+      }
+    
+    constructor: |
+      export class WeatherComponent {
+        private weatherService: WeatherService;
+        
+        constructor() {
+          // CORRECT: In constructor
+          this.weatherService = inject(WeatherService);
+        }
+      }
+    
+    factory-function: |
+      export function weatherFactory() {
+        // CORRECT: In factory function
+        const http = inject(HttpClient);
+        const config = inject(ConfigService);
+        return new WeatherService(http, config);
+      }
+    
+    injection-token: |
+      // Creating injection tokens
+      export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
+      export const WEATHER_CONFIG = new InjectionToken<WeatherConfig>('WEATHER_CONFIG');
+      
+      // Providing values
+      providers: [
+        { provide: API_BASE_URL, useValue: 'http://localhost:3000/api' },
+        { provide: WEATHER_CONFIG, useFactory: weatherConfigFactory }
+      ]
+  
+  incorrect-patterns:
+    - "inject() in ngOnInit or other lifecycle hooks"
+    - "inject() in regular methods"
+    - "inject() in setTimeout or Promise callbacks"
+    - "inject() outside of Angular context"
+
+material-design-3:
+  description: "Material Design 3 component usage patterns"
+  
+  theme-configuration:
+    file: "styles.scss"
+    example: |
+      @use '@angular/material' as mat;
+      
+      $theme: mat.define-theme((
+        color: (
+          theme-type: light,
+          primary: mat.$azure-palette,
+          tertiary: mat.$blue-palette,
+        ),
+        typography: (
+          brand-family: 'Roboto',
+          plain-family: 'Roboto',
+        ),
+        density: (
+          scale: 0
+        )
+      ));
+      
+      html {
+        @include mat.all-component-themes($theme);
+      }
+      
+      .dark-theme {
+        $dark-theme: mat.define-theme((
+          color: (
+            theme-type: dark,
+            primary: mat.$azure-palette,
+          )
+        ));
+        @include mat.all-component-colors($dark-theme);
+      }
+  
+  common-components:
+    card: |
+      import { MatCardModule } from '@angular/material/card';
+      
+      @Component({
+        imports: [MatCardModule],
+        template: `
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>Weather</mat-card-title>
+              <mat-card-subtitle>Current Conditions</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              {{ temperature }}°F
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button>REFRESH</button>
+            </mat-card-actions>
+          </mat-card>
+        `
+      })
+    
+    form-field: |
+      import { MatFormFieldModule } from '@angular/material/form-field';
+      import { MatInputModule } from '@angular/material/input';
+      
+      @Component({
+        imports: [MatFormFieldModule, MatInputModule, ReactiveFormsModule],
+        template: `
+          <mat-form-field appearance="outline">
+            <mat-label>City</mat-label>
+            <input matInput [formControl]="cityControl">
+            <mat-error>{{ cityControl.errors?.['required'] ? 'City is required' : '' }}</mat-error>
+          </mat-form-field>
+        `
+      })
+    
+    button: |
+      import { MatButtonModule } from '@angular/material/button';
+      import { MatIconModule } from '@angular/material/icon';
+      
+      @Component({
+        imports: [MatButtonModule, MatIconModule],
+        template: `
+          <button mat-raised-button color="primary">
+            <mat-icon>refresh</mat-icon>
+            Refresh Weather
+          </button>
+        `
+      })
+    
+    progress: |
+      import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+      
+      @Component({
+        imports: [MatProgressSpinnerModule],
+        template: `
+          @if (loading()) {
+            <mat-spinner diameter="40"></mat-spinner>
+          }
+        `
+      })
+
+testing-patterns:
+  description: "Angular 20 testing patterns"
+  
+  component-testing:
+    basic: |
+      import { ComponentFixture, TestBed } from '@angular/core/testing';
+      import { signal } from '@angular/core';
+      
+      describe('WeatherComponent', () => {
+        let component: WeatherComponent;
+        let fixture: ComponentFixture<WeatherComponent>;
+        
+        beforeEach(async () => {
+          await TestBed.configureTestingModule({
+            imports: [WeatherComponent], // Import standalone component
+            providers: [
+              { provide: WeatherService, useValue: createMockWeatherService() }
+            ]
+          }).compileComponents();
+          
+          fixture = TestBed.createComponent(WeatherComponent);
+          component = fixture.componentInstance;
+        });
+        
+        it('should create', () => {
+          expect(component).toBeTruthy();
+        });
+        
+        it('should update temperature signal', () => {
+          component.temperature.set(75);
+          fixture.detectChanges();
+          expect(component.temperature()).toBe(75);
+        });
+      });
+    
+    with-material: |
+      import { HarnessLoader } from '@angular/cdk/testing';
+      import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+      import { MatButtonHarness } from '@angular/material/button/testing';
+      
+      describe('WeatherComponent with Material', () => {
+        let loader: HarnessLoader;
+        
+        beforeEach(() => {
+          fixture = TestBed.createComponent(WeatherComponent);
+          loader = TestbedHarnessEnvironment.loader(fixture);
+        });
+        
+        it('should click refresh button', async () => {
+          const button = await loader.getHarness(MatButtonHarness);
+          await button.click();
+          expect(component.refresh).toHaveBeenCalled();
+        });
+      });
+  
+  service-testing:
+    with-http: |
+      import { TestBed } from '@angular/core/testing';
+      import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+      import { provideHttpClient } from '@angular/common/http';
+      
+      describe('WeatherService', () => {
+        let service: WeatherService;
+        let httpTesting: HttpTestingController;
+        
+        beforeEach(() => {
+          TestBed.configureTestingModule({
+            providers: [
+              WeatherService,
+              provideHttpClient(),
+              provideHttpClientTesting()
+            ]
+          });
+          service = TestBed.inject(WeatherService);
+          httpTesting = TestBed.inject(HttpTestingController);
+        });
+        
+        afterEach(() => {
+          httpTesting.verify();
+        });
+        
+        it('should fetch weather data', () => {
+          const mockWeather = { temperature: 72 };
+          
+          service.getWeather(47.6, -122.3).subscribe(weather => {
+            expect(weather).toEqual(mockWeather);
+          });
+          
+          const req = httpTesting.expectOne('http://localhost:3000/api/weather/current');
+          expect(req.request.method).toEqual('POST');
+          req.flush(mockWeather);
+        });
+      });
+    
+    signal-testing: |
+      it('should compute feels like temperature', () => {
+        const temp = signal(72);
+        const humidity = signal(65);
+        const feelsLike = computed(() => temp() + (humidity() > 70 ? 5 : 0));
+        
+        expect(feelsLike()).toBe(72);
+        
+        humidity.set(75);
+        expect(feelsLike()).toBe(77);
+      });
+
+error-handling:
+  description: "Common error patterns and solutions"
+  
+  ng0203-injection-context:
+    error: "NG0203: inject() must be called from an injection context"
+    cause: "Calling inject() outside constructor or field initializer"
+    solution: |
+      // WRONG
+      ngOnInit() {
+        this.service = inject(WeatherService); // ERROR
+      }
+      
+      // CORRECT
+      private service = inject(WeatherService);
+      ngOnInit() {
+        this.service.loadData();
+      }
+  
+  ng0100-expression-changed:
+    error: "NG0100: ExpressionChangedAfterItHasBeenCheckedError"
+    cause: "Changing values after change detection"
+    solution: |
+      // Use signals for reactive updates
+      value = signal(0);
+      ngAfterViewInit() {
+        this.value.set(1); // Safe with signals
+      }
+      
+      // Or use setTimeout for non-signal values
+      ngAfterViewInit() {
+        setTimeout(() => {
+          this.value = 1;
+        });
+      }
+  
+  ng8001-unknown-element:
+    error: "NG8001: Unknown element or component"
+    cause: "Component not imported in standalone component"
+    solution: |
+      @Component({
+        selector: 'app-example',
+        standalone: true,
+        imports: [WeatherCardComponent], // Add missing import
+        template: '<weather-card />'
+      })
+  
+  ng0301-export-not-found:
+    error: "NG0301: Export not found"
+    cause: "Template reference to non-exported member"
+    solution: |
+      // Add template reference
+      @Component({
+        template: '<input #cityInput>'
+      })
+      export class Component {
+        @ViewChild('cityInput') cityInput!: ElementRef;
+      }
+
+migration-helpers:
+  description: "Helpers for migrating to Angular 20"
+  
+  ngmodule-to-standalone: |
+    // Before (NgModule)
+    @NgModule({
+      declarations: [AppComponent, WeatherComponent],
+      imports: [BrowserModule, HttpClientModule],
+      bootstrap: [AppComponent]
+    })
+    export class AppModule {}
+    
+    // After (Standalone)
+    @Component({
+      selector: 'app-root',
+      standalone: true,
+      imports: [WeatherComponent, HttpClient],
+      template: ''
+    })
+    export class AppComponent {}
+    
+    // main.ts
+    bootstrapApplication(AppComponent, appConfig);
+  
+  control-flow-migration: |
+    // Before
+    <div *ngIf="loading">Loading...</div>
+    <div *ngFor="let item of items; let i = index">
+      {{ i }}: {{ item }}
+    </div>
+    
+    // After
+    @if (loading) {
+      <div>Loading...</div>
+    }
+    @for (item of items; track item.id; let i = $index) {
+      <div>{{ i }}: {{ item }}</div>
+    }
+  
+  rxjs-to-signals: |
+    // Before (RxJS)
+    export class Component {
+      weather$ = this.service.getWeather();
+      loading$ = new BehaviorSubject(false);
+    }
+    
+    // After (Signals)
+    export class Component {
+      weather = signal<Weather | null>(null);
+      loading = signal(false);
+      
+      loadWeather() {
+        this.loading.set(true);
+        this.service.getWeather().subscribe(data => {
+          this.weather.set(data);
+          this.loading.set(false);
+        });
+      }
+    }

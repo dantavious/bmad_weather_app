@@ -1,4 +1,11 @@
-import { IsNumber, IsNotEmpty, Min, Max } from 'class-validator';
+import {
+  IsNumber,
+  IsNotEmpty,
+  Min,
+  Max,
+  IsOptional,
+  IsIn,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class WeatherQueryDto {
@@ -15,4 +22,8 @@ export class WeatherQueryDto {
   @Max(180)
   @Transform(({ value }) => parseFloat(value))
   longitude: number;
+
+  @IsOptional()
+  @IsIn(['imperial', 'metric'])
+  units?: 'imperial' | 'metric';
 }

@@ -26,7 +26,7 @@ export class LoggingInterceptor implements NestInterceptor {
         next: () => {
           const elapsed = Date.now() - start;
           const { statusCode } = response;
-          
+
           this.logger.log({
             message: 'HTTP Request',
             method,
@@ -40,7 +40,7 @@ export class LoggingInterceptor implements NestInterceptor {
         error: (error) => {
           const elapsed = Date.now() - start;
           const statusCode = error?.status || 500;
-          
+
           this.logger.error({
             message: 'HTTP Request Error',
             method,
@@ -62,7 +62,11 @@ export class LoggingInterceptor implements NestInterceptor {
     if (forwarded) {
       return (forwarded as string).split(',')[0].trim();
     }
-    
-    return request.connection.remoteAddress || request.socket.remoteAddress || 'unknown';
+
+    return (
+      request.connection.remoteAddress ||
+      request.socket.remoteAddress ||
+      'unknown'
+    );
   }
 }

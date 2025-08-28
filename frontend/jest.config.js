@@ -9,6 +9,9 @@ module.exports = {
   rootDir: '.',
   modulePaths: ['<rootDir>'],
   coverageDirectory: 'coverage',
+  moduleNameMapper: {
+    '^@shared/(.*)$': '<rootDir>/../shared/$1'
+  },
   transform: {
     '^.+\\.(ts|mjs|js|html)$': ['jest-preset-angular', {
       tsconfig: '<rootDir>/tsconfig.spec.json',

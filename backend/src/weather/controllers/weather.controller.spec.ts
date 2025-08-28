@@ -83,7 +83,9 @@ describe('WeatherController', () => {
       const result = await controller.getCurrentWeather(dto);
 
       expect(result).toEqual(mockWeather);
-      expect(cacheService.get).toHaveBeenCalledWith('weather:current:47.6:-122.3');
+      expect(cacheService.get).toHaveBeenCalledWith(
+        'weather:current:47.6:-122.3',
+      );
       expect(openWeatherService.fetchCurrentWeather).not.toHaveBeenCalled();
       expect(cacheService.set).not.toHaveBeenCalled();
     });
@@ -95,8 +97,13 @@ describe('WeatherController', () => {
       const result = await controller.getCurrentWeather(dto);
 
       expect(result).toEqual(mockWeather);
-      expect(cacheService.get).toHaveBeenCalledWith('weather:current:47.6:-122.3');
-      expect(openWeatherService.fetchCurrentWeather).toHaveBeenCalledWith(47.6, -122.3);
+      expect(cacheService.get).toHaveBeenCalledWith(
+        'weather:current:47.6:-122.3',
+      );
+      expect(openWeatherService.fetchCurrentWeather).toHaveBeenCalledWith(
+        47.6,
+        -122.3,
+      );
       expect(cacheService.set).toHaveBeenCalledWith(
         'weather:current:47.6:-122.3',
         mockWeather,
@@ -108,13 +115,15 @@ describe('WeatherController', () => {
         latitude: 47.6062,
         longitude: -122.3321,
       };
-      
+
       mockCacheService.get.mockResolvedValue(null);
       mockOpenWeatherService.fetchCurrentWeather.mockResolvedValue(mockWeather);
 
       await controller.getCurrentWeather(preciseDto);
 
-      expect(cacheService.get).toHaveBeenCalledWith('weather:current:47.61:-122.33');
+      expect(cacheService.get).toHaveBeenCalledWith(
+        'weather:current:47.61:-122.33',
+      );
     });
   });
 });

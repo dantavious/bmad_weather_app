@@ -35,6 +35,145 @@ describe('OpenWeatherService', () => {
     jest.clearAllMocks();
   });
 
+  describe('fetchForecast', () => {
+    it('should fetch and process 7-day forecast', async () => {
+      const mockForecastResponse = {
+        data: {
+          list: [
+            // Day 1 - multiple entries
+            {
+              dt: 1704067200,
+              main: { temp: 50, humidity: 65 },
+              weather: [{ description: 'clear sky', icon: '01d' }],
+              wind: { speed: 10 },
+              pop: 0.1,
+            },
+            {
+              dt: 1704078000,
+              main: { temp: 55, humidity: 60 },
+              weather: [{ description: 'clear sky', icon: '01d' }],
+              wind: { speed: 12 },
+              pop: 0.15,
+            },
+            {
+              dt: 1704088800,
+              main: { temp: 60, humidity: 55 },
+              weather: [{ description: 'few clouds', icon: '02d' }],
+              wind: { speed: 8 },
+              pop: 0.2,
+            },
+            // Day 2 - multiple entries
+            {
+              dt: 1704153600,
+              main: { temp: 45, humidity: 70 },
+              weather: [{ description: 'light rain', icon: '10d' }],
+              wind: { speed: 15 },
+              pop: 0.6,
+            },
+            {
+              dt: 1704164400,
+              main: { temp: 48, humidity: 75 },
+              weather: [{ description: 'rain', icon: '10d' }],
+              wind: { speed: 18 },
+              pop: 0.8,
+            },
+          ],
+        },
+      };
+
+      mockedAxios.get.mockResolvedValue(mockForecastResponse);
+
+      const result = await service.fetchForecast(40.7128, -74.006, 'imperial');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://api.openweathermap.org/data/2.5/forecast',
+        {
+          params: {
+            lat: 40.7128,
+            lon: -74.006,
+            appid: 'test-api-key',
+            units: 'imperial',
+            cnt: 40,
+          },
+        },
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        temperatureMin: 50,
+        temperatureMax: 60,
+        humidity: 60,
+        windSpeed: 10,
+        precipitationProbability: 20,
+      });
+    });
+
+    it('should limit forecast to 7 days', async () => {
+      const mockForecastResponse = {
+        data: {
+          list: Array(40).fill(null).map((_, index) => ({
+            dt: 1704067200 + index * 10800, // 3-hour intervals
+            main: { temp: 50 + index, humidity: 60 },
+            weather: [{ description: 'clear', icon: '01d' }],
+            wind: { speed: 10 },
+            pop: 0.1,
+          })),
+        },
+      };
+
+      mockedAxios.get.mockResolvedValue(mockForecastResponse);
+
+      const result = await service.fetchForecast(40.7128, -74.006);
+
+      expect(result.length).toBeLessThanOrEqual(7);
+    });
+
+    it('should calculate precipitation probability correctly', async () => {
+      const mockForecastResponse = {
+        data: {
+          list: [
+            {
+              dt: 1704067200,
+              main: { temp: 50, humidity: 65 },
+              weather: [{ description: 'rain', icon: '10d' }],
+              wind: { speed: 10 },
+              pop: 0.0,
+            },
+            {
+              dt: 1704078000,
+              main: { temp: 52, humidity: 70 },
+              weather: [{ description: 'rain', icon: '10d' }],
+              wind: { speed: 12 },
+              pop: 0.95,
+            },
+          ],
+        },
+      };
+
+      mockedAxios.get.mockResolvedValue(mockForecastResponse);
+
+      const result = await service.fetchForecast(40.7128, -74.006);
+
+      expect(result[0].precipitationProbability).toBe(95);
+    });
+
+    it('should handle API errors for forecast', async () => {
+      const error = {
+        isAxiosError: true,
+        response: { status: 429 },
+      };
+      mockedAxios.get.mockRejectedValue(error);
+      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true);
+
+      await expect(service.fetchForecast(40.7128, -74.006)).rejects.toThrow(
+        new HttpException(
+          'OpenWeather API rate limit exceeded',
+          HttpStatus.TOO_MANY_REQUESTS,
+        ),
+      );
+    });
+  });
+
   describe('fetchCurrentWeather', () => {
     const mockApiResponse = {
       data: {

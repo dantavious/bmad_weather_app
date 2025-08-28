@@ -16,8 +16,11 @@ export class RateLimitGuard implements CanActivate {
 
   constructor(private configService: ConfigService) {
     this.windowMs = this.configService.get<number>('rateLimit.windowMs', 60000);
-    this.maxRequests = this.configService.get<number>('rateLimit.maxRequests', 60);
-    
+    this.maxRequests = this.configService.get<number>(
+      'rateLimit.maxRequests',
+      60,
+    );
+
     this.startCleanupInterval();
   }
 
@@ -26,21 +29,21 @@ export class RateLimitGuard implements CanActivate {
     const ip = this.getClientIp(request);
     const now = Date.now();
     const windowStart = now - this.windowMs;
-    
+
     const requestTimes = this.requests.get(ip) || [];
-    
-    const recentRequests = requestTimes.filter(time => time > windowStart);
-    
+
+    const recentRequests = requestTimes.filter((time) => time > windowStart);
+
     if (recentRequests.length >= this.maxRequests) {
       throw new HttpException(
         'Too many requests, please try again later',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    
+
     recentRequests.push(now);
     this.requests.set(ip, recentRequests);
-    
+
     return true;
   }
 
@@ -49,18 +52,22 @@ export class RateLimitGuard implements CanActivate {
     if (forwarded) {
       return (forwarded as string).split(',')[0].trim();
     }
-    
-    return request.connection.remoteAddress || request.socket.remoteAddress || 'unknown';
+
+    return (
+      request.connection.remoteAddress ||
+      request.socket.remoteAddress ||
+      'unknown'
+    );
   }
 
   private startCleanupInterval(): void {
     setInterval(() => {
       const now = Date.now();
       const windowStart = now - this.windowMs;
-      
+
       for (const [ip, times] of this.requests.entries()) {
-        const recentRequests = times.filter(time => time > windowStart);
-        
+        const recentRequests = times.filter((time) => time > windowStart);
+
         if (recentRequests.length === 0) {
           this.requests.delete(ip);
         } else {

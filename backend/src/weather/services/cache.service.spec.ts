@@ -14,7 +14,7 @@ describe('CacheService', () => {
 
   beforeEach(async () => {
     jest.useFakeTimers();
-    
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CacheService,
@@ -109,12 +109,12 @@ describe('CacheService', () => {
   describe('cleanup interval', () => {
     it('should automatically remove expired entries', async () => {
       await service.set('key1', { data: 1 });
-      
+
       jest.advanceTimersByTime(300000);
       await service.set('key2', { data: 2 });
-      
+
       jest.advanceTimersByTime(300001);
-      
+
       jest.advanceTimersByTime(60000);
 
       const result1 = await service.get('key1');

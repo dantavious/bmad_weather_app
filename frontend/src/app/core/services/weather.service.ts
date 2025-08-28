@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Weather, WeatherForecast } from '@shared/models/weather.model';
+import { Weather, WeatherForecast, DailyWeather } from '@shared/models/weather.model';
 
 @Injectable({ providedIn: 'root' })
 export class WeatherService {
@@ -13,6 +13,7 @@ export class WeatherService {
   private weatherCache = new Map<string, BehaviorSubject<WeatherForecast | null>>();
   private loadingStates = new Map<string, BehaviorSubject<boolean>>();
   private errorStates = new Map<string, BehaviorSubject<string | null>>();
+  private forecastCache = new Map<string, BehaviorSubject<DailyWeather[]>>();
 
   getCurrentWeatherByCoordinates(lat: number, lon: number, units: 'imperial' | 'metric' = 'imperial'): Observable<WeatherForecast> {
     const key = `${lat.toFixed(2)},${lon.toFixed(2)}`;
@@ -81,5 +82,43 @@ export class WeatherService {
       this.errorStates.set(key, new BehaviorSubject<string | null>(null));
     }
     return this.errorStates.get(key)!.asObservable();
+  }
+  
+  getForecast(lat: number, lon: number, units: 'imperial' | 'metric' = 'imperial'): Observable<DailyWeather[]> {
+    const key = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+    
+    // Check cache first
+    if (this.forecastCache.has(key)) {
+      const cached = this.forecastCache.get(key)!.value;
+      if (cached && cached.length > 0) {
+        return of(cached);
+      }
+    } else {
+      this.forecastCache.set(key, new BehaviorSubject<DailyWeather[]>([]));
+    }
+    
+    const cache = this.forecastCache.get(key)!;
+    
+    return this.http.post<DailyWeather[]>(`${this.apiUrl}/weather/forecast`, {
+      latitude: lat,
+      longitude: lon,
+      units
+    }).pipe(
+      tap(data => {
+        cache.next(data);
+      }),
+      catchError(err => {
+        console.error('Error fetching forecast:', err);
+        return of([]);
+      })
+    );
+  }
+  
+  getForecastObservable(lat: number, lon: number): Observable<DailyWeather[]> {
+    const key = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+    if (!this.forecastCache.has(key)) {
+      this.forecastCache.set(key, new BehaviorSubject<DailyWeather[]>([]));
+    }
+    return this.forecastCache.get(key)!.asObservable();
   }
 }

@@ -1,6 +1,6 @@
 import { Component, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,6 +18,8 @@ import { LoadingService } from './core/services/loading.service';
   imports: [
     CommonModule,
     RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
     MatSidenavModule,
     MatToolbarModule,
     MatIconModule,
@@ -37,13 +39,13 @@ import { LoadingService } from './core/services/loading.service';
         fixedInViewport="false">
         <mat-toolbar>Menu</mat-toolbar>
         <mat-nav-list>
-          <a mat-list-item href="#" aria-label="Dashboard">
+          <a mat-list-item routerLink="/dashboard" routerLinkActive="active" aria-label="Dashboard">
             <mat-icon matListItemIcon>dashboard</mat-icon>
             <span matListItemTitle>Dashboard</span>
           </a>
-          <a mat-list-item href="#" aria-label="Weather">
-            <mat-icon matListItemIcon>wb_sunny</mat-icon>
-            <span matListItemTitle>Weather</span>
+          <a mat-list-item routerLink="/search" routerLinkActive="active" aria-label="Search">
+            <mat-icon matListItemIcon>search</mat-icon>
+            <span matListItemTitle>Add Location</span>
           </a>
           <a mat-list-item href="#" aria-label="Settings">
             <mat-icon matListItemIcon>settings</mat-icon>
@@ -65,6 +67,12 @@ import { LoadingService } from './core/services/loading.service';
           }
           <span>DatDude Weather</span>
           <span class="spacer"></span>
+          <button 
+            mat-icon-button
+            routerLink="/search"
+            aria-label="Add new location">
+            <mat-icon>add_location</mat-icon>
+          </button>
           <button 
             mat-icon-button 
             (click)="toggleTheme()"

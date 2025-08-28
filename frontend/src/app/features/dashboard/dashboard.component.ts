@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -45,7 +45,11 @@ import { WeatherLocation } from '@shared/models/location.model';
       @if (locations().length > 0) {
         <div class="locations-grid">
           @for (location of locations(); track location.id) {
-            <app-weather-card [location]="location"></app-weather-card>
+            <app-weather-card 
+              [location]="location"
+              [isFlipped]="getFlipState(location.id)"
+              (flipped)="onCardFlipped(location.id, $event)"
+            ></app-weather-card>
           }
         </div>
       } @else if (!loading() && !error()) {
@@ -88,8 +92,11 @@ import { WeatherLocation } from '@shared/models/location.model';
     .locations-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 24px;
-      margin-bottom: 24px;
+      gap: 32px;
+      margin-bottom: 32px;
+      align-items: start;
+      grid-auto-rows: minmax(280px, auto);
+      padding-bottom: 24px;
     }
     
     @media (max-width: 768px) {
@@ -149,6 +156,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   locations = signal<WeatherLocation[]>([]);
   loading = signal(false);
   error = signal<string | null>(null);
+  flipStatesMap = new Map<string, WritableSignal<boolean>>();
   
   ngOnInit() {
     this.loadLocations();
@@ -197,5 +205,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ).subscribe(error => {
       this.error.set(error);
     });
+  }
+  
+  getFlipState(locationId: string): WritableSignal<boolean> {
+    if (!this.flipStatesMap.has(locationId)) {
+      this.flipStatesMap.set(locationId, signal(false));
+    }
+    return this.flipStatesMap.get(locationId)!;
+  }
+  
+  onCardFlipped(locationId: string, isFlipped: boolean) {
+    const flipSignal = this.getFlipState(locationId);
+    flipSignal.set(isFlipped);
   }
 }

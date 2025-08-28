@@ -11,6 +11,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
+    path: 'search',
+    loadComponent: () => import('./features/search/search.component').then(m => m.SearchComponent)
+  },
+  {
     path: '**',
     loadComponent: () => import('./shared/components/not-found/not-found.component').then(m => m.NotFoundComponent)
   }

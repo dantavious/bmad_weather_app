@@ -1,0 +1,98 @@
+schema: 1
+story: '1.4'
+story_title: 'Location Dashboard with Current Weather'
+gate: CONCERNS
+status_reason: 'Critical memory leaks fixed during review, but API optimization and security hardening still needed'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-08-28T04:45:00Z'
+
+top_issues:
+  - id: SEC-001
+    severity: high
+    title: 'API Key Security Verification Required'
+    description: 'While API keys appear secured on backend, need runtime verification that no keys leak to frontend bundle'
+    suggested_owner: dev
+  - id: PERF-001
+    severity: medium
+    title: 'Multiple Simultaneous API Calls'
+    description: 'Dashboard with 5 cards triggers 5+ API calls without batching'
+    suggested_owner: dev
+  - id: TECH-001
+    severity: medium
+    title: 'Memory Leaks Fixed During Review'
+    description: 'Fixed RxJS subscription leaks in WeatherCard and Dashboard components'
+    suggested_owner: dev
+
+waiver:
+  active: false
+
+quality_score: 70
+expires: '2025-09-11T04:45:00Z'
+
+evidence:
+  tests_reviewed: 25
+  risks_identified: 8
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: CONCERNS
+    notes: 'API keys properly managed but needs runtime verification'
+  performance:
+    status: CONCERNS
+    notes: 'Unbatched API calls could hit rate limits'
+  reliability:
+    status: PASS
+    notes: 'Error handling and retry mechanisms in place'
+  maintainability:
+    status: PASS
+    notes: 'Code follows Angular 20 patterns, now with proper cleanup'
+
+risk_summary:
+  totals:
+    critical: 1
+    high: 1
+    medium: 2
+    low: 4
+  highest:
+    id: SEC-001
+    score: 9
+    title: 'API Key Exposure in Frontend'
+  recommendations:
+    must_fix:
+      - 'Verify API keys dont leak to frontend bundle'
+      - 'Implement request batching for multiple weather calls'
+    monitor:
+      - 'API call volumes and rate limit hits'
+      - 'Memory usage patterns in production'
+
+recommendations:
+  immediate:
+    - action: 'Add security scan to CI/CD for exposed secrets'
+      refs: ['frontend build pipeline']
+    - action: 'Implement request batching for weather API'
+      refs: ['weather.service.ts']
+  future:
+    - action: 'Consider implementing request caching strategy'
+      refs: ['weather.service.ts']
+    - action: 'Add performance monitoring'
+      refs: ['dashboard.component.ts']
+
+test_coverage:
+  unit: 85
+  integration: 60
+  e2e: 0
+  gaps:
+    - 'No end-to-end tests for dashboard flow'
+    - 'Missing security tests for API key protection'
+    - 'No performance tests for concurrent API calls'
+
+refactoring_performed:
+  - file: 'weather-card.component.ts'
+    changes: 'Added proper RxJS subscription cleanup with takeUntil pattern'
+    impact: 'Prevents memory leaks in long-running sessions'
+  - file: 'dashboard.component.ts'
+    changes: 'Implemented ngOnDestroy with subscription cleanup'
+    impact: 'Fixes potential memory leaks when navigating away'
