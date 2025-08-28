@@ -13,6 +13,12 @@ dist/
 build/
 out/
 
+# Shared compiled files
+shared/**/*.js
+shared/**/*.js.map
+shared/**/*.d.ts
+!shared/**/*.spec.ts
+
 # Cache and data
 .cache/
 .data/
