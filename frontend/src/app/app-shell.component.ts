@@ -1,4 +1,4 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { Component, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
@@ -54,14 +54,15 @@ import { LoadingService } from './core/services/loading.service';
       
       <mat-sidenav-content>
         <mat-toolbar color="primary">
-          <button
-            type="button"
-            mat-icon-button
-            (click)="drawer.toggle()"
-            *ngIf="isHandset()"
-            aria-label="Toggle navigation menu">
-            <mat-icon>menu</mat-icon>
-          </button>
+          @if (isHandset()) {
+            <button
+              type="button"
+              mat-icon-button
+              (click)="drawer.toggle()"
+              aria-label="Toggle navigation menu">
+              <mat-icon>menu</mat-icon>
+            </button>
+          }
           <span>DatDude Weather</span>
           <span class="spacer"></span>
           <button 
@@ -73,11 +74,12 @@ import { LoadingService } from './core/services/loading.service';
           </button>
         </mat-toolbar>
         
-        <mat-progress-bar 
-          *ngIf="isLoading()" 
-          mode="indeterminate"
-          color="accent">
-        </mat-progress-bar>
+        @if (isLoading()) {
+          <mat-progress-bar 
+            mode="indeterminate"
+            color="accent">
+          </mat-progress-bar>
+        }
         
         <main class="content">
           <router-outlet />
@@ -131,15 +133,19 @@ import { LoadingService } from './core/services/loading.service';
 export class AppShellComponent {
   @ViewChild('drawer') drawer!: MatSidenav;
   
-  protected readonly themeService = inject(ThemeService);
-  protected readonly loadingService = inject(LoadingService);
-  protected readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly themeService = inject(ThemeService);
+  private readonly loadingService = inject(LoadingService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
 
   isDarkMode = this.themeService.isDarkMode;
   isLoading = this.loadingService.isLoading;
+  isHandset = signal(false);
   
-  isHandset() {
-    return this.breakpointObserver.isMatched('(max-width: 768px)');
+  constructor() {
+    // Subscribe to breakpoint changes
+    this.breakpointObserver.observe(['(max-width: 768px)']).subscribe(result => {
+      this.isHandset.set(result.matches);
+    });
   }
   
   toggleTheme() {

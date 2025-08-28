@@ -42,7 +42,9 @@ describe('ThemeService', () => {
 
   it('should load saved theme preference', () => {
     localStorage.setItem('theme', 'light');
-    const newService = new ThemeService();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    const newService = TestBed.inject(ThemeService);
     expect(newService.isDarkMode()).toBe(false);
   });
 });

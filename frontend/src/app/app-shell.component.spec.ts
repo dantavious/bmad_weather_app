@@ -6,6 +6,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { ThemeService } from './core/services/theme.service';
 import { LoadingService } from './core/services/loading.service';
 import { signal } from '@angular/core';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('AppShellComponent', () => {
   let component: AppShellComponent;
@@ -26,7 +27,7 @@ describe('AppShellComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [AppShellComponent],
+      imports: [AppShellComponent, MatProgressBarModule],
       providers: [
         provideRouter([]),
         provideAnimationsAsync(),
@@ -57,14 +58,14 @@ describe('AppShellComponent', () => {
   });
 
   it('should show loading bar when loading', () => {
-    mockLoadingService.isLoading = signal(true);
+    (mockLoadingService.isLoading as any).set(true);
     fixture.detectChanges();
     const progressBar = fixture.nativeElement.querySelector('mat-progress-bar');
     expect(progressBar).toBeTruthy();
   });
 
   it('should hide loading bar when not loading', () => {
-    mockLoadingService.isLoading = signal(false);
+    (mockLoadingService.isLoading as any).set(false);
     fixture.detectChanges();
     const progressBar = fixture.nativeElement.querySelector('mat-progress-bar');
     expect(progressBar).toBeFalsy();
