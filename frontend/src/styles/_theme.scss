@@ -1,0 +1,121 @@
+@use '@angular/material' as mat;
+
+// First, emit Material's core styles
+@include mat.core();
+
+// Material 3 Theme Configuration using CSS Variables
+:root {
+  // Primary palette colors from Material Theme Builder (#60390D seed)
+  --mat-primary-0: #000000;
+  --mat-primary-10: #2D1600;
+  --mat-primary-20: #4A2800;
+  --mat-primary-25: #583206;
+  --mat-primary-30: #663E12;
+  --mat-primary-35: #73491C;
+  --mat-primary-40: #815527;
+  --mat-primary-50: #9D6D3D;
+  --mat-primary-60: #BA8654;
+  --mat-primary-70: #D8A06B;
+  --mat-primary-80: #F6BB84;
+  --mat-primary-90: #FFDCBF;
+  --mat-primary-95: #FFEEE1;
+  --mat-primary-98: #FFF8F5;
+  --mat-primary-99: #FFFBFF;
+  --mat-primary-100: #FFFFFF;
+  
+  // Tertiary palette colors (#FF572A)
+  --mat-tertiary-0: #000000;
+  --mat-tertiary-10: #3C0800;
+  --mat-tertiary-20: #611300;
+  --mat-tertiary-30: #891E00;
+  --mat-tertiary-40: #B32A00;
+  --mat-tertiary-50: #DB3E10;
+  --mat-tertiary-60: #FF572A;
+  --mat-tertiary-70: #FF8B6C;
+  --mat-tertiary-80: #FFB4A1;
+  --mat-tertiary-90: #FFDBD2;
+  --mat-tertiary-95: #FFEDE9;
+  --mat-tertiary-98: #FFF8F6;
+  --mat-tertiary-99: #FFFBFF;
+  --mat-tertiary-100: #FFFFFF;
+}
+
+// Dark theme configuration using M3 system
+.dark-theme {
+  // Use Material 3's system-level color scheme
+  color-scheme: dark;
+  
+  // Primary color roles
+  --mdc-theme-primary: #FDB876;
+  --mdc-theme-on-primary: #4A2800;
+  --mat-toolbar-color: var(--mdc-theme-primary);
+  
+  // Surface colors from Material Theme Builder
+  --mdc-theme-background: #19120C;
+  --mdc-theme-surface: #19120C;
+  --mdc-theme-on-surface: #EFE0D5;
+  
+  // Surface container colors (M3 elevation system)
+  --mat-app-surface-container: #261E18;
+  --mat-app-surface-container-low: #211A14;
+  --mat-app-surface-container-high: #312822;
+  --mat-app-surface-container-highest: #3C332C;
+  
+  // Primary container colors
+  --mat-app-primary-container: #6A3B01;
+  --mat-app-on-primary-container: #FFDCBF;
+  
+  // Tertiary colors
+  --mat-app-tertiary: #FFB4A1;
+  --mat-app-on-tertiary: #561F10;
+  --mat-app-tertiary-container: #723524;
+  --mat-app-on-tertiary-container: #FFDBD2;
+}
+
+// Light theme configuration using M3 system  
+.light-theme {
+  // Use Material 3's system-level color scheme
+  color-scheme: light;
+  
+  // Primary color roles
+  --mdc-theme-primary: #865219;
+  --mdc-theme-on-primary: #FFFFFF;
+  --mat-toolbar-color: var(--mdc-theme-primary);
+  
+  // Surface colors from Material Theme Builder
+  --mdc-theme-background: #FFF8F5;
+  --mdc-theme-surface: #FFF8F5;
+  --mdc-theme-on-surface: #211A14;
+  
+  // Surface container colors (M3 elevation system)
+  --mat-app-surface-container: #FAEBE0;
+  --mat-app-surface-container-low: #FFF1E8;
+  --mat-app-surface-container-high: #F5E5DB;
+  --mat-app-surface-container-highest: #EFE0D5;
+  
+  // Primary container colors
+  --mat-app-primary-container: #FFDCBF;
+  --mat-app-on-primary-container: #6A3B01;
+  
+  // Tertiary colors
+  --mat-app-tertiary: #8F4B39;
+  --mat-app-on-tertiary: #FFFFFF;
+  --mat-app-tertiary-container: #FFDBD2;
+  --mat-app-on-tertiary-container: #723524;
+}
+
+// Set dark theme as default
+body {
+  @extend .dark-theme;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Material typography
+html, body {
+  height: 100%;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
