@@ -1,8 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Subject, takeUntil } from 'rxjs';
+import { LocationService } from '../../core/services/location.service';
+import { WeatherCardComponent } from './components/weather-card/weather-card.component';
+import { WeatherLocation } from '@shared/models/location.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,91 +16,186 @@ import { MatIconModule } from '@angular/material/icon';
     CommonModule,
     MatCardModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressBarModule,
+    WeatherCardComponent
   ],
   template: `
     <div class="dashboard-container">
-      <h1>Welcome to DatDude Weather</h1>
+      <header class="dashboard-header">
+        <h1>Weather Dashboard</h1>
+        @if (loading()) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+      </header>
       
-      <div class="cards-grid">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>location_on</mat-icon>
-              Current Location
-            </mat-card-title>
-          </mat-card-header>
+      @if (error()) {
+        <mat-card class="error-card">
           <mat-card-content>
-            <p>Weather data will be displayed here</p>
+            <mat-icon color="warn">error_outline</mat-icon>
+            <p>{{ error() }}</p>
+            <button mat-button color="primary" (click)="loadLocations()">
+              <mat-icon>refresh</mat-icon>
+              Retry
+            </button>
           </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">VIEW DETAILS</button>
-          </mat-card-actions>
         </mat-card>
-        
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>schedule</mat-icon>
-              Forecast
-            </mat-card-title>
-          </mat-card-header>
+      }
+      
+      @if (locations().length > 0) {
+        <div class="locations-grid">
+          @for (location of locations(); track location.id) {
+            <app-weather-card [location]="location"></app-weather-card>
+          }
+        </div>
+      } @else if (!loading() && !error()) {
+        <mat-card class="empty-state">
           <mat-card-content>
-            <p>5-day forecast coming soon</p>
+            <mat-icon>location_off</mat-icon>
+            <h2>No Locations Added</h2>
+            <p>Add your first location to start tracking weather</p>
+            <button mat-raised-button color="primary">
+              <mat-icon>add_location</mat-icon>
+              Add Location
+            </button>
           </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">VIEW FORECAST</button>
-          </mat-card-actions>
         </mat-card>
-        
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>warning</mat-icon>
-              Alerts
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <p>No active weather alerts</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button color="primary">VIEW ALL</button>
-          </mat-card-actions>
-        </mat-card>
-      </div>
+      }
     </div>
   `,
   styles: [`
     .dashboard-container {
-      padding: 20px 0;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
     }
     
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 24px;
-      color: var(--mat-sys-on-surface);
+    .dashboard-header {
+      margin-bottom: 32px;
     }
     
-    .cards-grid {
+    .dashboard-header h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      margin: 0 0 16px 0;
+      color: var(--mdc-theme-on-surface);
+    }
+    
+    mat-progress-bar {
+      margin-top: 8px;
+    }
+    
+    .locations-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
     }
     
-    mat-card {
-      background-color: var(--mat-app-surface-container);
+    @media (max-width: 768px) {
+      .locations-grid {
+        grid-template-columns: 1fr;
+      }
     }
     
-    mat-card-header mat-icon {
-      margin-right: 8px;
-      vertical-align: middle;
+    .error-card,
+    .empty-state {
+      max-width: 600px;
+      margin: 48px auto;
+      text-align: center;
     }
     
-    mat-card-title {
+    .error-card mat-card-content,
+    .empty-state mat-card-content {
+      padding: 48px 24px;
       display: flex;
+      flex-direction: column;
       align-items: center;
+      gap: 16px;
+    }
+    
+    .error-card mat-icon,
+    .empty-state mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: var(--mdc-theme-on-surface);
+      opacity: 0.7;
+    }
+    
+    .error-card mat-icon {
+      color: #ef5350;
+      opacity: 1;
+    }
+    
+    .empty-state h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--mdc-theme-on-surface);
+    }
+    
+    .empty-state p {
+      margin: 0;
+      color: var(--mdc-theme-on-surface);
+      opacity: 0.7;
     }
   `]
 })
-export class DashboardComponent {}
+export class DashboardComponent implements OnInit, OnDestroy {
+  private locationService = inject(LocationService);
+  private destroy$ = new Subject<void>();
+  
+  locations = signal<WeatherLocation[]>([]);
+  loading = signal(false);
+  error = signal<string | null>(null);
+  
+  ngOnInit() {
+    this.loadLocations();
+    this.subscribeToLocationUpdates();
+  }
+  
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  
+  loadLocations() {
+    this.loading.set(true);
+    this.error.set(null);
+    
+    this.locationService.fetchLocations().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (locations) => {
+        this.locations.set(locations.slice(0, 5));
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading locations:', err);
+        this.error.set('Failed to load locations');
+        this.loading.set(false);
+      }
+    });
+  }
+  
+  private subscribeToLocationUpdates() {
+    this.locationService.locations$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(locations => {
+      this.locations.set(locations.slice(0, 5));
+    });
+    
+    this.locationService.loading$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(loading => {
+      this.loading.set(loading);
+    });
+    
+    this.locationService.error$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(error => {
+      this.error.set(error);
+    });
+  }
+}

@@ -3,7 +3,11 @@
 // First, emit Material's core styles
 @include mat.core();
 
-// Material 3 Theme Configuration using CSS Variables
+// Define the application's color palettes using Material 3 approach
+// Angular Material 19+ uses simplified M3 theme system with CSS variables
+
+// Create Material 3 theme using system-level CSS variables
+// This approach works with Angular Material 19+ and the new M3 system
 :root {
   // Primary palette colors from Material Theme Builder (#60390D seed)
   --mat-primary-0: #000000;
@@ -40,6 +44,37 @@
   --mat-tertiary-100: #FFFFFF;
 }
 
+// Define Material 3 theme with custom colors
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$azure-palette,
+    tertiary: mat.$orange-palette,
+  ),
+  typography: (
+    brand-family: 'Roboto',
+    plain-family: 'Roboto',
+  ),
+  density: (
+    scale: 0
+  )
+));
+
+$light-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+    tertiary: mat.$orange-palette,
+  ),
+  typography: (
+    brand-family: 'Roboto',
+    plain-family: 'Roboto',
+  ),
+  density: (
+    scale: 0
+  )
+));
+
 // Dark theme configuration using M3 system
 .dark-theme {
   // Use Material 3's system-level color scheme
@@ -70,9 +105,14 @@
   --mat-app-on-tertiary: #561F10;
   --mat-app-tertiary-container: #723524;
   --mat-app-on-tertiary-container: #FFDBD2;
+  
+  // Apply theme to all Material components
+  @include mat.all-component-colors($dark-theme);
+  @include mat.system-level-colors($dark-theme);
+  @include mat.system-level-typography($dark-theme);
 }
 
-// Light theme configuration using M3 system  
+// Light theme configuration using M3 system
 .light-theme {
   // Use Material 3's system-level color scheme
   color-scheme: light;
@@ -102,6 +142,11 @@
   --mat-app-on-tertiary: #FFFFFF;
   --mat-app-tertiary-container: #FFDBD2;
   --mat-app-on-tertiary-container: #723524;
+  
+  // Apply theme to all Material components
+  @include mat.all-component-colors($light-theme);
+  @include mat.system-level-colors($light-theme);
+  @include mat.system-level-typography($light-theme);
 }
 
 // Set dark theme as default

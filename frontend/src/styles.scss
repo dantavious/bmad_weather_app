@@ -1,7 +1,7 @@
-/* Import Material 3 Theme */
-/* Temporarily disabled: @use './styles/theme'; */
+// Import Material 3 Theme Configuration
+@use './styles/theme';
 
-/* Global Styles */
+// Global Styles
 html, body {
   height: 100%;
   margin: 0;
@@ -15,4 +15,74 @@ html, body {
 app-root {
   display: block;
   height: 100%;
+}
+
+// Material elevation styles
+.mat-elevation-z1 {
+  box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
+              0px 1px 1px 0px rgba(0, 0, 0, 0.14),
+              0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+}
+
+.mat-elevation-z2 {
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+              0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+              0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+}
+
+.mat-elevation-z4 {
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+              0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+              0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+}
+
+.mat-elevation-z8 {
+  box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2),
+              0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+// Override Material component backgrounds for proper dark theme
+.dark-theme {
+  background-color: var(--mdc-theme-background);
+  color: var(--mdc-theme-on-surface);
+  
+  .mat-mdc-card {
+    --mdc-elevated-card-container-color: var(--mat-app-surface-container);
+  }
+  
+  .mat-toolbar {
+    --mat-toolbar-container-background-color: var(--mdc-theme-primary);
+    --mat-toolbar-container-text-color: var(--mdc-theme-on-primary);
+  }
+  
+  .mat-sidenav {
+    background-color: var(--mat-app-surface-container-low);
+  }
+  
+  .mat-sidenav-content {
+    background-color: var(--mdc-theme-background);
+  }
+}
+
+.light-theme {
+  background-color: var(--mdc-theme-background);
+  color: var(--mdc-theme-on-surface);
+  
+  .mat-mdc-card {
+    --mdc-elevated-card-container-color: var(--mat-app-surface-container);
+  }
+  
+  .mat-toolbar {
+    --mat-toolbar-container-background-color: var(--mdc-theme-primary);
+    --mat-toolbar-container-text-color: var(--mdc-theme-on-primary);
+  }
+  
+  .mat-sidenav {
+    background-color: var(--mat-app-surface-container-low);
+  }
+  
+  .mat-sidenav-content {
+    background-color: var(--mdc-theme-background);
+  }
 }
