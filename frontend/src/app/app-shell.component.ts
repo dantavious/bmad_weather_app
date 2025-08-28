@@ -131,14 +131,16 @@ import { LoadingService } from './core/services/loading.service';
 export class AppShellComponent {
   @ViewChild('drawer') drawer!: MatSidenav;
   
-  private themeService = inject(ThemeService);
-  private loadingService = inject(LoadingService);
-  private breakpointObserver = inject(BreakpointObserver);
+  protected readonly themeService = inject(ThemeService);
+  protected readonly loadingService = inject(LoadingService);
+  protected readonly breakpointObserver = inject(BreakpointObserver);
 
   isDarkMode = this.themeService.isDarkMode;
   isLoading = this.loadingService.isLoading;
   
-  isHandset = () => this.breakpointObserver.isMatched('(max-width: 768px)');
+  isHandset() {
+    return this.breakpointObserver.isMatched('(max-width: 768px)');
+  }
   
   toggleTheme() {
     this.themeService.toggleTheme();

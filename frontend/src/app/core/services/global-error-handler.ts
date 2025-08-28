@@ -1,9 +1,11 @@
-import { ErrorHandler, Injectable, inject } from '@angular/core';
+import { ErrorHandler, Injectable } from '@angular/core';
 import { ErrorService } from './error.service';
 
 @Injectable()
 export class GlobalErrorHandler extends ErrorHandler {
-  private errorService = inject(ErrorService);
+  constructor(private errorService: ErrorService) {
+    super();
+  }
   
   override handleError(error: Error): void {
     const message = this.getUserFriendlyMessage(error);
