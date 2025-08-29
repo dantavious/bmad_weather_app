@@ -93,10 +93,12 @@ import { WeatherLocation } from '@shared/models/location.model';
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 32px;
+      row-gap: 32px;
       margin-bottom: 32px;
       align-items: start;
-      grid-auto-rows: minmax(280px, auto);
+      grid-auto-rows: minmax(320px, auto);
       padding-bottom: 24px;
+      container-type: inline-size;
     }
     
     @media (max-width: 768px) {

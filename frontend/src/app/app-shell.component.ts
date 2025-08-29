@@ -47,6 +47,14 @@ import { LoadingService } from './core/services/loading.service';
             <mat-icon matListItemIcon>search</mat-icon>
             <span matListItemTitle>Add Location</span>
           </a>
+          <a mat-list-item routerLink="/map" routerLinkActive="active" aria-label="Map">
+            <mat-icon matListItemIcon>map</mat-icon>
+            <span matListItemTitle>Weather Map</span>
+          </a>
+          <a mat-list-item routerLink="/settings/alerts" routerLinkActive="active" aria-label="Alert Settings">
+            <mat-icon matListItemIcon>notifications</mat-icon>
+            <span matListItemTitle>Alert Settings</span>
+          </a>
           <a mat-list-item href="#" aria-label="Settings">
             <mat-icon matListItemIcon>settings</mat-icon>
             <span matListItemTitle>Settings</span>

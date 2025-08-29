@@ -1,15 +1,19 @@
-import { Component, Input, inject, OnInit, OnDestroy, signal, Output, EventEmitter } from '@angular/core';
+import { Component, Input, inject, OnInit, OnDestroy, signal, Output, EventEmitter, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { Subject, takeUntil } from 'rxjs';
 import { WeatherLocation } from '@shared/models/location.model';
 import { WeatherForecast, DailyWeather } from '@shared/models/weather.model';
 import { WeatherService } from '../../../../core/services/weather.service';
 import { SettingsService } from '../../../../core/services/settings.service';
+import { PrecipitationAlertService } from '../../../../core/services/precipitation-alert.service';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 
 @Component({
@@ -21,6 +25,9 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    MatBadgeModule,
+    MatTooltipModule,
+    MatSlideToggleModule,
     LoadingSkeletonComponent
   ],
   animations: [
@@ -67,7 +74,17 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
             </mat-card-content>
           } @else if (weather()) {
             <mat-card-header>
-              <mat-card-title>{{ location.name }}</mat-card-title>
+              <mat-card-title>
+                {{ location.name }}
+                @if (hasAlert()) {
+                  <mat-icon 
+                    class="alert-indicator" 
+                    [matTooltip]="getAlertTooltip()"
+                    color="warn">
+                    notifications_active
+                  </mat-icon>
+                }
+              </mat-card-title>
               @if (location.isPrimary) {
                 <mat-icon class="primary-badge" title="Primary Location">star</mat-icon>
               }
@@ -95,6 +112,16 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
                   <mat-icon>thermostat</mat-icon>
                   <span>Feels like {{ formatTemperature(weather()!.current.feelsLike) }}°</span>
                 </div>
+              </div>
+              <div class="alert-toggle">
+                <mat-slide-toggle
+                  [checked]="alertsEnabled()"
+                  (change)="toggleAlerts($event)"
+                  [matTooltip]="alertsEnabled() ? 'Precipitation alerts enabled' : 'Precipitation alerts disabled'"
+                  (click)="$event.stopPropagation()">
+                  <mat-icon>{{ alertsEnabled() ? 'notifications_active' : 'notifications_off' }}</mat-icon>
+                  Alerts
+                </mat-slide-toggle>
               </div>
             </mat-card-content>
           }
@@ -148,16 +175,18 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
   styles: [`
     .flip-card-container {
       width: 100%;
-      min-height: 280px;
+      min-height: 320px;
       perspective: 1000px;
       cursor: pointer;
       transition: min-height 0.3s ease;
+      position: relative;
     }
     
     .flip-card-inner {
       position: relative;
       width: 100%;
-      min-height: 280px;
+      height: 100%;
+      min-height: 320px;
       transform-style: preserve-3d;
       transition: min-height 0.3s ease;
     }
@@ -169,13 +198,14 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
     .flip-card-front,
     .flip-card-back {
       width: 100%;
-      min-height: 280px;
+      min-height: 320px;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
       position: absolute;
       top: 0;
       left: 0;
       transition: box-shadow 0.2s;
+      display: block;
     }
     
     .flip-card-back {
@@ -189,6 +219,12 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
     .flip-card-back {
       transform: rotateY(180deg);
       z-index: 1;
+    }
+    
+    mat-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
     
     .flip-card-front.loading {
@@ -396,6 +432,54 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
       height: 48px;
       margin-bottom: 16px;
     }
+    
+    .alert-indicator {
+      animation: pulse 2s infinite;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    
+    .alert-toggle {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      justify-content: center;
+      padding-bottom: 8px;
+    }
+    
+    .alert-toggle mat-slide-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .alert-toggle mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+    
+    mat-card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
   `]
 })
 export class WeatherCardComponent implements OnInit, OnDestroy {
@@ -405,6 +489,7 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
   
   private weatherService = inject(WeatherService);
   private settingsService = inject(SettingsService);
+  private alertService = inject(PrecipitationAlertService);
   private destroy$ = new Subject<void>();
   
   weather = signal<WeatherForecast | null>(null);
@@ -414,6 +499,18 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
   forecast = signal<DailyWeather[]>([]);
   loadingForecast = signal(false);
   forecastError = signal<string | null>(null);
+  
+  // Precipitation alert
+  hasAlert = signal(false);
+  alertInfo = signal<any>(null);
+  alertsEnabled = signal(false);
+  
+  // Watch for alert changes - initialize as field to be in injection context
+  private alertWatcher = effect(() => {
+    const alert = this.alertService.getAlertForLocation(this.location.id);
+    this.hasAlert.set(!!alert);
+    this.alertInfo.set(alert);
+  });
   
   // Animation state
   flip: string = 'inactive';
@@ -426,6 +523,8 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadWeather();
     this.subscribeToWeatherUpdates();
+    this.checkForAlerts();
+    this.loadAlertSettings();
   }
   
   ngOnDestroy() {
@@ -621,5 +720,34 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
     } else {
       return dateObj.toLocaleDateString('en-US', { weekday: 'short' });
     }
+  }
+  
+  private checkForAlerts(): void {
+    const alert = this.alertService.getAlertForLocation(this.location.id);
+    this.hasAlert.set(!!alert);
+    this.alertInfo.set(alert);
+  }
+  
+  getAlertTooltip(): string {
+    const alert = this.alertInfo();
+    if (!alert) return '';
+    
+    const type = alert.precipitationType === 'rain' ? 'Rain' : 
+                 alert.precipitationType === 'snow' ? 'Snow' : 'Precipitation';
+    const intensity = alert.intensity.charAt(0).toUpperCase() + alert.intensity.slice(1);
+    
+    return `${intensity} ${type} starting in ${alert.minutesToStart} minutes`;
+  }
+  
+  loadAlertSettings(): void {
+    const settings = this.alertService.getAlertSettings(this.location.id);
+    this.alertsEnabled.set(settings?.enabled || false);
+  }
+  
+  toggleAlerts(event: any): void {
+    event.stopPropagation();
+    const enabled = event.checked;
+    this.alertsEnabled.set(enabled);
+    this.alertService.updateAlertSettings(this.location.id, { enabled });
   }
 }
