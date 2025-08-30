@@ -1,8 +1,11 @@
-import { ApplicationConfig, ErrorHandler, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, isDevMode, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideServiceWorker } from '@angular/service-worker';
+import { PlatformModule } from '@angular/cdk/platform';
+import { A11yModule } from '@angular/cdk/a11y';
+import { LayoutModule } from '@angular/cdk/layout';
 
 import { routes } from './app.routes';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
@@ -13,8 +16,13 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([loadingInterceptor])),
-    provideAnimationsAsync(),
-    importProvidersFrom(MatSnackBarModule),
+    provideAnimations(),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000'
+    }),
+    // CDK Providers - properly imported from modules
+    importProvidersFrom(PlatformModule, A11yModule, LayoutModule),
     { provide: ErrorHandler, useClass: GlobalErrorHandlerSimple }
   ]
 };
