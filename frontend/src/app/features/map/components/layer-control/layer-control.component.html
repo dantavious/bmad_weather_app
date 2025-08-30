@@ -1,0 +1,66 @@
+<!-- FAB Button -->
+@if (!isExpanded()) {
+  <button 
+    mat-fab 
+    color="primary"
+    (click)="togglePanel()"
+    matTooltip="Weather Layers"
+    matTooltipPosition="above">
+    <mat-icon>layers</mat-icon>
+  </button>
+} @else {
+  <!-- Compact Inline Panel -->
+  <div class="layer-panel-compact">
+    <div class="panel-header">
+      <mat-icon color="primary">layers</mat-icon>
+      <span>Weather Layers</span>
+      <button mat-icon-button (click)="togglePanel()" class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div class="panel-body">
+      @for (layer of weatherLayerService.layers(); track layer.id; let i = $index) {
+        <div class="layer-option">
+          <div class="layer-header">
+            <mat-checkbox 
+              [checked]="layer.active"
+              (change)="toggleLayer(layer.id)"
+              color="primary">
+              <mat-icon class="layer-icon">{{ getLayerIcon(layer.id) }}</mat-icon>
+              {{ layer.name }}
+            </mat-checkbox>
+          </div>
+          
+          @if (layer.active) {
+            <div class="opacity-control">
+              <div class="opacity-header">
+                <span class="opacity-label">Transparency</span>
+                <span class="opacity-value">{{ getOpacityPercent(layer.id) }}%</span>
+              </div>
+              <input type="range" 
+                     min="10" 
+                     max="100" 
+                     step="10"
+                     [value]="getOpacityPercent(layer.id)"
+                     (input)="updateOpacity(layer.id, +$any($event.target).value)"
+                     class="opacity-slider"
+                     [attr.aria-label]="layer.name + ' transparency'">
+              <div class="opacity-hints">
+                <span>Clear</span>
+                <span>Opaque</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      
+      @if (weatherLayerService.activeLayers().length > 0) {
+        <div class="info-message">
+          <mat-icon>info</mat-icon>
+          <span>{{ weatherLayerService.activeLayers().length }} layer(s) active</span>
+        </div>
+      }
+    </div>
+  </div>
+}

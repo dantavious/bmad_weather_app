@@ -1,0 +1,27 @@
+@if (showLegend() && legendData()) {
+  <mat-card class="weather-legend">
+    <mat-card-header>
+      <mat-icon class="legend-icon">{{ legendData()!.icon }}</mat-icon>
+      <mat-card-title>{{ legendData()!.title }}</mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="legend-gradient" 
+           [style.background]="getGradient(legendData()!.scale)"
+           aria-label="Color scale gradient">
+      </div>
+      
+      <div class="legend-labels">
+        @for (item of legendData()!.scale; track item.value) {
+          <div class="legend-item">
+            <div class="color-box" [style.background-color]="item.color"></div>
+            <div class="label-text">
+              <span class="label">{{ item.label }}</span>
+              <span class="value">{{ item.value }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+}

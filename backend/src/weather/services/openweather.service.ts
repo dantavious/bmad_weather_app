@@ -78,12 +78,12 @@ export class OpenWeatherService {
 
   private processForecastData(data: any, units: string): DailyWeather[] {
     const dailyMap = new Map<string, any[]>();
-    
+
     // Group forecast items by day
     data.list.forEach((item: any) => {
       const date = new Date(item.dt * 1000);
       const dayKey = date.toISOString().split('T')[0];
-      
+
       if (!dailyMap.has(dayKey)) {
         dailyMap.set(dayKey, []);
       }
@@ -92,37 +92,39 @@ export class OpenWeatherService {
 
     // Convert to daily forecasts
     const dailyForecasts: DailyWeather[] = [];
-    
+
     dailyMap.forEach((dayData, dateString) => {
       if (dailyForecasts.length >= 7) return; // Limit to 7 days
-      
-      const temps = dayData.map(item => item.main.temp);
+
+      const temps = dayData.map((item) => item.main.temp);
       const minTemp = Math.min(...temps);
       const maxTemp = Math.max(...temps);
-      
+
       // Get the most common weather condition for the day
-      const conditions = dayData.map(item => ({
+      const conditions = dayData.map((item) => ({
         description: item.weather[0]?.description || '',
         icon: item.weather[0]?.icon || '',
       }));
-      
+
       // Use the weather at noon (or closest to it) as representative
       const noonIndex = Math.floor(dayData.length / 2);
       const representativeWeather = conditions[noonIndex] || conditions[0];
-      
+
       // Calculate average humidity and wind speed
       const avgHumidity = Math.round(
-        dayData.reduce((sum, item) => sum + item.main.humidity, 0) / dayData.length
+        dayData.reduce((sum, item) => sum + item.main.humidity, 0) /
+          dayData.length,
       );
       const avgWindSpeed = Math.round(
-        dayData.reduce((sum, item) => sum + item.wind.speed, 0) / dayData.length
+        dayData.reduce((sum, item) => sum + item.wind.speed, 0) /
+          dayData.length,
       );
-      
+
       // Calculate precipitation probability (use max for the day)
       const precipProbability = Math.round(
-        Math.max(...dayData.map(item => (item.pop || 0) * 100))
+        Math.max(...dayData.map((item) => (item.pop || 0) * 100)),
       );
-      
+
       dailyForecasts.push({
         date: new Date(dateString),
         temperatureMin: Math.round(minTemp),
@@ -134,7 +136,7 @@ export class OpenWeatherService {
         precipitationProbability: precipProbability,
       });
     });
-    
+
     return dailyForecasts.slice(0, 7); // Ensure we return exactly 7 days or less
   }
 

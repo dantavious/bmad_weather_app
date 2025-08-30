@@ -1,5 +1,13 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +16,10 @@ import { SearchComponent } from './search.component';
 import { LocationService } from '../../core/services/location.service';
 import { LocationSearchResult } from '@shared/models/location.model';
 import { of, throwError } from 'rxjs';
+import { importProvidersFrom } from '@angular/core';
+import { MatDialogModule } from '@angular/material/dialog';
+import { HighContrastModeDetector } from '@angular/cdk/a11y';
+import { Platform } from '@angular/cdk/platform';
 
 describe('SearchComponent', () => {
   let component: SearchComponent;
@@ -18,8 +30,14 @@ describe('SearchComponent', () => {
   let snackBar: jest.Mocked<MatSnackBar>;
 
   const mockSearchResults: LocationSearchResult[] = [
-    { name: 'New York', country: 'US', state: 'New York', lat: 40.71, lon: -74.01 },
-    { name: 'London', country: 'GB', lat: 51.51, lon: -0.13 }
+    {
+      name: 'New York',
+      country: 'US',
+      state: 'New York',
+      lat: 40.71,
+      lon: -74.01,
+    },
+    { name: 'London', country: 'GB', lat: 51.51, lon: -0.13 },
   ];
 
   // Mock SpeechRecognition globally before all tests
@@ -41,36 +59,50 @@ describe('SearchComponent', () => {
   beforeEach(async () => {
     const locationServiceSpy = {
       getLocations: jest.fn(),
-      addLocation: jest.fn()
+      addLocation: jest.fn(),
     };
     const routerSpy = {
-      navigate: jest.fn()
+      navigate: jest.fn(),
     };
     const snackBarSpy = {
-      open: jest.fn()
+      open: jest.fn(),
     };
 
-    await TestBed.configureTestingModule({
+        await TestBed.configureTestingModule({
       imports: [
         SearchComponent,
         HttpClientTestingModule,
         NoopAnimationsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        LayoutModule,
+        MatDialogModule,
       ],
       providers: [
         { provide: LocationService, useValue: locationServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: MatSnackBar, useValue: snackBarSpy }
-      ]
+        { provide: MatSnackBar, useValue: snackBarSpy },
+        {
+          provide: HighContrastModeDetector,
+          useValue: {
+            _applyBodyHighContrastModeCssClasses: () => {},
+          },
+        },
+        {
+          provide: Platform,
+          useValue: { isBrowser: true },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchComponent);
     component = fixture.componentInstance;
     httpTestingController = TestBed.inject(HttpTestingController);
-    locationService = TestBed.inject(LocationService) as jest.Mocked<LocationService>;
+    locationService = TestBed.inject(
+      LocationService
+    ) as jest.Mocked<LocationService>;
     router = TestBed.inject(Router) as jest.Mocked<Router>;
     snackBar = TestBed.inject(MatSnackBar) as jest.Mocked<MatSnackBar>;
-    
+
     fixture.detectChanges();
   });
 
@@ -99,11 +131,13 @@ describe('SearchComponent', () => {
     component.searchControl.setValue('New York');
     tick(350);
 
-    const req = httpTestingController.expectOne('/api/search/location?q=New%20York');
+    const req = httpTestingController.expectOne(
+      '/api/search/location?q=New%20York'
+    );
     expect(req.request.method).toBe('GET');
-    
+
     req.flush(mockSearchResults);
-    
+
     expect(component.searchResults()).toEqual(mockSearchResults);
     expect(component.isSearching()).toBe(false);
   }));
@@ -113,21 +147,26 @@ describe('SearchComponent', () => {
     tick(350);
 
     const req = httpTestingController.expectOne('/api/search/location?q=test');
-    req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
-    
-    expect(component.searchError()).toBe('Failed to search locations. Please try again.');
+    req.flush('Server error', {
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    expect(component.searchError()).toBe(
+      'Failed to search locations. Please try again.'
+    );
     expect(component.searchResults()).toEqual([]);
   }));
 
   it('should add location when selected from autocomplete', fakeAsync(() => {
     locationService.getLocations.mockReturnValue(of([]));
-    
+
     const location = mockSearchResults[0];
     const event = {
-      option: { value: location }
+      option: { value: location },
     };
 
-    component.onLocationSelected(event);
+    component.onLocationSelected(event as any);
     tick();
 
     const req = httpTestingController.expectOne('/api/locations');
@@ -137,7 +176,7 @@ describe('SearchComponent', () => {
       latitude: location.lat,
       longitude: location.lon,
       country: location.country,
-      state: location.state
+      state: location.state,
     });
 
     req.flush({ id: '1', ...location });
@@ -152,25 +191,27 @@ describe('SearchComponent', () => {
   }));
 
   it('should show error when location limit is reached', fakeAsync(() => {
-    const existingLocations = Array(5).fill({}).map((_, i) => ({
-      id: String(i),
-      name: `Location ${i}`,
-      latitude: 0,
-      longitude: 0,
-      isPrimary: i === 0,
-      order: i,
-      createdAt: new Date(),
-      settings: { alertsEnabled: true, units: 'imperial' as const }
-    }));
+    const existingLocations = Array(5)
+      .fill({})
+      .map((_, i) => ({
+        id: String(i),
+        name: `Location ${i}`,
+        latitude: 0,
+        longitude: 0,
+        isPrimary: i === 0,
+        order: i,
+        createdAt: new Date(),
+        settings: { alertsEnabled: true, units: 'imperial' as const },
+      }));
 
     locationService.getLocations.mockReturnValue(of(existingLocations));
-    
+
     const location = mockSearchResults[0];
     const event = {
-      option: { value: location }
+      option: { value: location },
     };
 
-    component.onLocationSelected(event);
+    component.onLocationSelected(event as any);
     tick();
 
     expect(snackBar.open).toHaveBeenCalledWith(
@@ -257,11 +298,13 @@ describe('SearchComponent', () => {
       onstart: null as any,
       onresult: null as any,
       onerror: null as any,
-      onend: null as any
+      onend: null as any,
     };
 
-    (window as any).webkitSpeechRecognition = jest.fn().mockReturnValue(mockRecognition);
-    
+    (window as any).webkitSpeechRecognition = jest
+      .fn()
+      .mockReturnValue(mockRecognition);
+
     // Re-initialize component to pick up the mock
     fixture = TestBed.createComponent(SearchComponent);
     component = fixture.componentInstance;
@@ -276,7 +319,7 @@ describe('SearchComponent', () => {
     (component as any).recognition = mockRecognition;
 
     component.ngOnDestroy();
-    
+
     expect(mockRecognition.stop).toHaveBeenCalled();
   });
 });

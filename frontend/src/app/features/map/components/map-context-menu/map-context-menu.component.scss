@@ -1,0 +1,24 @@
+.map-context-menu {
+  .mat-mdc-menu-item {
+    mat-icon {
+      margin-right: 12px;
+      color: var(--mat-app-primary);
+    }
+  }
+  
+  .coordinates-display {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    color: var(--mat-app-on-surface-variant);
+    font-size: 12px;
+    
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      color: var(--mat-app-primary);
+    }
+  }
+}

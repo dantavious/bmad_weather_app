@@ -1,13 +1,27 @@
 import { TestBed } from '@angular/core/testing';
 import { ThemeService } from './theme.service';
+import { A11yModule, HighContrastModeDetector } from '@angular/cdk/a11y';
+import { PlatformModule } from '@angular/cdk/platform';
+import { LayoutModule } from '@angular/cdk/layout';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ThemeService', () => {
   let service: ThemeService;
 
   beforeEach(() => {
-    localStorage.clear();
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [
+        ThemeService,
+        {
+          provide: HighContrastModeDetector,
+          useValue: {
+            _applyBodyHighContrastModeCssClasses: () => {},
+          },
+        },
+      ],
+    });
     service = TestBed.inject(ThemeService);
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -42,9 +56,8 @@ describe('ThemeService', () => {
 
   it('should load saved theme preference', () => {
     localStorage.setItem('theme', 'light');
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({});
-    const newService = TestBed.inject(ThemeService);
+    // Re-create the service to simulate a new session
+    const newService = TestBed.runInInjectionContext(() => new ThemeService());
     expect(newService.isDarkMode()).toBe(false);
   });
 });

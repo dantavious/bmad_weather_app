@@ -2,13 +2,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { signal } from '@angular/core';
+import { signal, importProvidersFrom } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { WeatherCardComponent } from './weather-card.component';
 import { WeatherService } from '../../../../core/services/weather.service';
 import { SettingsService } from '../../../../core/services/settings.service';
 import { WeatherLocation } from '@shared/models/location.model';
 import { WeatherForecast, DailyWeather } from '@shared/models/weather.model';
+import { MatDialogModule } from '@angular/material/dialog';
+import { A11yModule } from '@angular/cdk/a11y';
+import { PlatformModule } from '@angular/cdk/platform';
+import { LayoutModule } from '@angular/cdk/layout';
 
 describe('WeatherCardComponent', () => {
   let component: WeatherCardComponent;
@@ -49,7 +53,9 @@ describe('WeatherCardComponent', () => {
       visibility: 10000,
       description: 'Partly cloudy',
       icon: '02d'
-    }
+    },
+    hourly: [],
+    daily: []
   };
 
   const mockDailyForecast: DailyWeather[] = [
@@ -94,7 +100,13 @@ describe('WeatherCardComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: WeatherService, useValue: mockWeatherService },
-        { provide: SettingsService, useValue: mockSettingsService }
+        { provide: SettingsService, useValue: mockSettingsService },
+        importProvidersFrom(
+          MatDialogModule,
+          A11yModule,
+          PlatformModule,
+          LayoutModule
+        ),
       ]
     }).compileComponents();
 
@@ -266,7 +278,7 @@ describe('WeatherCardComponent', () => {
     Date.now = jest.fn(() => mockTime);
     
     const touchStartEvent = new TouchEvent('touchstart', {
-      touches: [{ clientX: 100, clientY: 100 } as Touch]
+      touches: [{ clientX: 100, clientY: 100 } as any]
     });
     
     component.onTouchStart(touchStartEvent);
@@ -275,7 +287,7 @@ describe('WeatherCardComponent', () => {
     mockTime += 100;
     
     const touchEndEvent = new TouchEvent('touchend', {
-      changedTouches: [{ clientX: 200, clientY: 105 } as Touch]
+      changedTouches: [{ clientX: 200, clientY: 105 } as any]
     });
     
     component.onTouchEnd(touchEndEvent);
@@ -290,11 +302,11 @@ describe('WeatherCardComponent', () => {
     const toggleFlipSpy = jest.spyOn(component, 'toggleFlip');
     
     const touchStartEvent = new TouchEvent('touchstart', {
-      touches: [{ clientX: 100, clientY: 100 } as Touch]
+      touches: [{ clientX: 100, clientY: 100 } as any]
     });
     
     const touchEndEvent = new TouchEvent('touchend', {
-      changedTouches: [{ clientX: 105, clientY: 250 } as Touch]
+      changedTouches: [{ clientX: 105, clientY: 250 } as any]
     });
     
     component.onTouchStart(touchStartEvent);
@@ -312,7 +324,7 @@ describe('WeatherCardComponent', () => {
     Date.now = jest.fn(() => mockTime);
     
     const touchStartEvent = new TouchEvent('touchstart', {
-      touches: [{ clientX: 100, clientY: 100 } as Touch]
+      touches: [{ clientX: 100, clientY: 100 } as any]
     });
     
     component.onTouchStart(touchStartEvent);
@@ -321,7 +333,7 @@ describe('WeatherCardComponent', () => {
     mockTime += 500;
     
     const touchEndEvent = new TouchEvent('touchend', {
-      changedTouches: [{ clientX: 200, clientY: 100 } as Touch]
+      changedTouches: [{ clientX: 200, clientY: 100 } as any]
     });
     
     component.onTouchEnd(touchEndEvent);

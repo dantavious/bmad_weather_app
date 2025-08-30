@@ -111,13 +111,15 @@ describe('OpenWeatherService', () => {
     it('should limit forecast to 7 days', async () => {
       const mockForecastResponse = {
         data: {
-          list: Array(40).fill(null).map((_, index) => ({
-            dt: 1704067200 + index * 10800, // 3-hour intervals
-            main: { temp: 50 + index, humidity: 60 },
-            weather: [{ description: 'clear', icon: '01d' }],
-            wind: { speed: 10 },
-            pop: 0.1,
-          })),
+          list: Array(40)
+            .fill(null)
+            .map((_, index) => ({
+              dt: 1704067200 + index * 10800, // 3-hour intervals
+              main: { temp: 50 + index, humidity: 60 },
+              weather: [{ description: 'clear', icon: '01d' }],
+              wind: { speed: 10 },
+              pop: 0.1,
+            })),
         },
       };
 

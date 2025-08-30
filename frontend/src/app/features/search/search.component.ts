@@ -9,10 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Subject, debounceTime, distinctUntilChanged, filter, switchMap, takeUntil, catchError, of } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, filter, switchMap, takeUntil, catchError, of, take } from 'rxjs';
 /// <reference path="../../types/speech.d.ts" />
 import { LocationService } from '../../core/services/location.service';
-import { LocationSearchResult } from '@shared/models/location.model';
+import { LocationSearchResult, WeatherLocation } from '@shared/models/location.model';
 import { HttpClient } from '@angular/common/http';
 import { sanitizeSearchQuery, sanitizeHtml } from '@shared/utils/sanitize.util';
 
@@ -219,8 +219,10 @@ export class SearchComponent implements OnDestroy {
   }
 
   private addLocation(location: LocationSearchResult) {
-    this.locationService.getLocations().pipe(
-      switchMap(currentLocations => {
+    // Get current locations using the observable
+    this.locationService.locations$.pipe(
+      take(1), // Only take the first emission
+      switchMap((currentLocations: WeatherLocation[]) => {
         if (currentLocations.length >= 5) {
           throw new Error('Maximum number of locations (5) reached');
         }
@@ -241,7 +243,7 @@ export class SearchComponent implements OnDestroy {
         });
         this.router.navigate(['/']);
       },
-      error: (error) => {
+      error: (error: any) => {
         const message = error.error?.message || error.message || 'Failed to add location';
         this.snackBar.open(message, 'Close', {
           duration: 5000

@@ -26,5 +26,29 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "weather-api",
+      "urls": [
+        "/api/weather/**",
+        "/api/geocode/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "5m",
+        "timeout": "10s",
+        "strategy": "freshness"
+      },
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      }
+    }
+  ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/*__*",
+    "!/**/*__*/**"
   ]
 }

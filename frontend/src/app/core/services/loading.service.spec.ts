@@ -1,11 +1,27 @@
 import { TestBed } from '@angular/core/testing';
 import { LoadingService } from './loading.service';
+import { importProvidersFrom } from '@angular/core';
+import { MatDialogModule } from '@angular/material/dialog';
+import { A11yModule } from '@angular/cdk/a11y';
+import { PlatformModule } from '@angular/cdk/platform';
+import { LayoutModule } from '@angular/cdk/layout';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('LoadingService', () => {
   let service: LoadingService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [NoopAnimationsModule],
+      providers: [
+        importProvidersFrom(
+          MatDialogModule,
+          A11yModule,
+          PlatformModule,
+          LayoutModule
+        ),
+      ]
+    });
     service = TestBed.inject(LoadingService);
   });
 

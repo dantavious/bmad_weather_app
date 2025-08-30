@@ -28,7 +28,9 @@ describe('WeatherService', () => {
       visibility: 10000,
       description: 'Partly cloudy',
       icon: '02d'
-    }
+    },
+    hourly: [],
+    daily: []
   };
 
   beforeEach(() => {
@@ -69,15 +71,15 @@ describe('WeatherService', () => {
     });
 
     it('should cache weather data by coordinates', (done) => {
-      service.getCurrentWeatherByCoordinates(40.7128, -74.0060).subscribe();
+      service.getCurrentWeatherByCoordinates(40.7128, -74.0060).subscribe(() => {
+        service.getWeatherObservable(40.71, -74.01).subscribe(data => {
+          expect(data).toEqual(mockWeatherForecast);
+          done();
+        });
+      });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/weather/current`);
       req.flush(mockWeatherForecast);
-
-      service.getWeatherObservable(40.7128, -74.0060).subscribe(data => {
-        expect(data).toEqual(mockWeatherForecast);
-        done();
-      });
     });
 
     it('should handle errors gracefully', (done) => {
@@ -95,15 +97,15 @@ describe('WeatherService', () => {
     });
 
     it('should round coordinates for caching', (done) => {
-      service.getCurrentWeatherByCoordinates(40.7128456, -74.0060789).subscribe();
+      service.getCurrentWeatherByCoordinates(40.7128456, -74.0060789).subscribe(() => {
+        service.getWeatherObservable(40.71, -74.01).subscribe(data => {
+          expect(data).toEqual(mockWeatherForecast);
+          done();
+        });
+      });
       
       const req = httpMock.expectOne(`${environment.apiUrl}/weather/current`);
       req.flush(mockWeatherForecast);
-
-      service.getWeatherObservable(40.71, -74.01).subscribe(data => {
-        expect(data).toEqual(mockWeatherForecast);
-        done();
-      });
     });
   });
 

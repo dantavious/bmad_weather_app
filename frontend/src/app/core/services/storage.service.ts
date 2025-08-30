@@ -7,48 +7,54 @@ export class StorageService {
   private dbVersion = 1;
   private db: IDBDatabase | null = null;
   private readonly LOCATIONS_STORE = 'locations';
+  private dbInitialized: Promise<void>;
 
   constructor() {
-    this.initializeDB();
+    this.dbInitialized = this.initializeDB();
   }
 
   private async initializeDB(): Promise<void> {
-    try {
-      const request = indexedDB.open(this.dbName, this.dbVersion);
+    return new Promise((resolve) => {
+      try {
+        const request = indexedDB.open(this.dbName, this.dbVersion);
 
-      request.onerror = () => {
-        console.error('Failed to open IndexedDB:', request.error);
-      };
+        request.onerror = () => {
+          console.error('Failed to open IndexedDB:', request.error);
+          resolve(); // Resolve anyway to use fallback
+        };
 
-      request.onsuccess = () => {
-        this.db = request.result;
-        console.log('IndexedDB initialized successfully');
-      };
+        request.onsuccess = () => {
+          this.db = request.result;
+          // Remove console.log to avoid test pollution
+          resolve();
+        };
 
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
+        request.onupgradeneeded = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
 
-        // Create locations object store if it doesn't exist
-        if (!db.objectStoreNames.contains(this.LOCATIONS_STORE)) {
-          const locationsStore = db.createObjectStore(this.LOCATIONS_STORE, {
-            keyPath: 'id'
-          });
+          // Create locations object store if it doesn't exist
+          if (!db.objectStoreNames.contains(this.LOCATIONS_STORE)) {
+            const locationsStore = db.createObjectStore(this.LOCATIONS_STORE, {
+              keyPath: 'id'
+            });
 
-          // Create indexes as specified in the architecture
-          locationsStore.createIndex('order', 'order', { unique: false });
-          locationsStore.createIndex('isPrimary', 'isPrimary', { unique: false });
-          locationsStore.createIndex('createdAt', 'createdAt', { unique: false });
-        }
-      };
-    } catch (error) {
-      console.error('Error initializing IndexedDB:', error);
-      // Fall back to in-memory storage if IndexedDB fails
-    }
+            // Create indexes as specified in the architecture
+            locationsStore.createIndex('order', 'order', { unique: false });
+            locationsStore.createIndex('isPrimary', 'isPrimary', { unique: false });
+            locationsStore.createIndex('createdAt', 'createdAt', { unique: false });
+          }
+        };
+      } catch (error) {
+        console.error('Error initializing IndexedDB:', error);
+        resolve(); // Resolve to use fallback
+      }
+    });
   }
 
   async saveLocations(locations: WeatherLocation[]): Promise<void> {
+    await this.dbInitialized;
+    
     if (!this.db) {
-      console.warn('IndexedDB not available, using fallback storage');
       localStorage.setItem('locations', JSON.stringify(locations));
       return;
     }
@@ -75,8 +81,9 @@ export class StorageService {
   }
 
   async loadLocations(): Promise<WeatherLocation[]> {
+    await this.dbInitialized;
+    
     if (!this.db) {
-      console.warn('IndexedDB not available, using fallback storage');
       const stored = localStorage.getItem('locations');
       return stored ? JSON.parse(stored) : [];
     }
@@ -98,8 +105,9 @@ export class StorageService {
   }
 
   async addLocation(location: WeatherLocation): Promise<void> {
+    await this.dbInitialized;
+    
     if (!this.db) {
-      console.warn('IndexedDB not available, using fallback storage');
       const locations = await this.loadLocations();
       locations.push(location);
       localStorage.setItem('locations', JSON.stringify(locations));
@@ -122,8 +130,9 @@ export class StorageService {
   }
 
   async updateLocation(location: WeatherLocation): Promise<void> {
+    await this.dbInitialized;
+    
     if (!this.db) {
-      console.warn('IndexedDB not available, using fallback storage');
       const locations = await this.loadLocations();
       const index = locations.findIndex(l => l.id === location.id);
       if (index !== -1) {
@@ -152,8 +161,9 @@ export class StorageService {
   }
 
   async deleteLocation(id: string): Promise<void> {
+    await this.dbInitialized;
+    
     if (!this.db) {
-      console.warn('IndexedDB not available, using fallback storage');
       const locations = await this.loadLocations();
       const filtered = locations.filter(l => l.id !== id);
       localStorage.setItem('locations', JSON.stringify(filtered));
@@ -205,6 +215,25 @@ export class StorageService {
     } catch (error) {
       console.error('Error clearing IndexedDB:', error);
       localStorage.removeItem('locations');
+    }
+  }
+
+  // Generic get/set methods for other data
+  async get<T>(key: string): Promise<T | null> {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error(`Error getting ${key} from storage:`, error);
+      return null;
+    }
+  }
+
+  async set<T>(key: string, value: T): Promise<void> {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Error setting ${key} in storage:`, error);
     }
   }
 }

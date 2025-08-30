@@ -1,0 +1,156 @@
+@use '@angular/material' as mat;
+
+:host {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 99;
+  pointer-events: none; // Allow clicks to pass through to map
+}
+
+.weather-legend {
+  width: 280px;
+  max-width: calc(100vw - 48px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.3s ease-out;
+  pointer-events: auto; // Enable clicks on the card itself
+  
+  mat-card-header {
+    display: flex;
+    align-items: center;
+    padding-bottom: 8px;
+    
+    .legend-icon {
+      margin-right: 8px;
+      color: var(--mat-primary);
+    }
+    
+    mat-card-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+  
+  mat-card-content {
+    padding-top: 0;
+  }
+}
+
+.legend-gradient {
+  height: 20px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  border: 1px solid var(--mat-divider-color);
+}
+
+.legend-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  
+  .color-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    border: 1px solid var(--mat-divider-color);
+    flex-shrink: 0;
+  }
+  
+  .label-text {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    
+    .label {
+      font-weight: 500;
+      color: var(--mat-card-subtitle-text-color);
+    }
+    
+    .value {
+      color: var(--mat-hint-text);
+      font-size: 11px;
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  :host {
+    top: 70px; // Below map controls on mobile
+    right: 16px;
+  }
+  
+  .weather-legend {
+    width: 240px;
+    
+    mat-card-header {
+      mat-card-title {
+        font-size: 14px;
+      }
+    }
+    
+    .legend-item {
+      font-size: 11px;
+      
+      .value {
+        font-size: 10px;
+      }
+    }
+  }
+}
+
+// Collapsed state for very small screens
+@media (max-width: 400px) {
+  .weather-legend {
+    width: 180px;
+    
+    .legend-labels {
+      // Show only gradient on very small screens
+      display: none;
+    }
+    
+    mat-card-content::after {
+      content: 'Tap layers button for details';
+      font-size: 10px;
+      color: var(--mat-hint-text);
+      display: block;
+      text-align: center;
+      margin-top: 8px;
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .weather-legend {
+    background-color: var(--mat-app-surface);
+    
+    .legend-gradient {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    
+    .color-box {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+  }
+}

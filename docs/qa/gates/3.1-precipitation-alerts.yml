@@ -1,0 +1,131 @@
+schema: 1
+story: '3.1'
+story_title: 'Precipitation Alerts'
+gate: FAIL
+status_reason: 'Critical UI integration missing. Feature components exist but are not accessible to users. No service worker registered.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-08-29T13:35:00Z'
+
+top_issues:
+  - severity: high
+    issue: 'PrecipitationAlertSettingsComponent not integrated into application'
+    refs: ['frontend/src/app/app.routes.ts']
+    suggested_owner: dev
+  - severity: high
+    issue: 'No service worker registered for push notifications'
+    refs: ['frontend/src/main.ts']
+    suggested_owner: dev
+  - severity: high
+    issue: 'Alert toggles and indicators missing from weather cards'
+    refs: ['frontend/src/app/features/dashboard/components/weather-card/weather-card.component.ts']
+    suggested_owner: dev
+
+waiver:
+  active: false
+
+quality_score: 40
+
+expires: '2025-09-12T13:22:00Z'
+
+evidence:
+  tests_reviewed: 28
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 3, 6]  # Only backend monitoring, alert details, and cooldown logic actually work
+    ac_gaps: [2, 4, 5, 7, 8]  # UI features, notifications, and service worker missing
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'API keys properly managed through config service. Notification permissions properly requested. No secrets exposed.'
+  performance:
+    status: PASS
+    notes: 'Efficient caching (5min TTL), batch API calls, 30-minute cooldown prevents spam. Consider exponential backoff for failures.'
+  reliability:
+    status: PASS
+    notes: 'Comprehensive error handling, graceful degradation when APIs unavailable, proper fallback for unsupported browsers.'
+  maintainability:
+    status: PASS
+    notes: 'Well-structured code following Angular 20 patterns, good test coverage, clear separation of concerns.'
+
+recommendations:
+  immediate:
+    - action: 'Add route for precipitation settings component'
+      refs: ['frontend/src/app/app.routes.ts']
+    - action: 'Create and register service worker for notifications'
+      refs: ['frontend/src/main.ts', 'frontend/src/service-worker.js']
+    - action: 'Add alert settings link to navigation'
+      refs: ['frontend/src/app/app-shell.component.ts']
+    - action: 'Integrate alert toggles into weather cards'
+      refs: ['frontend/src/app/features/dashboard/components/weather-card/weather-card.component.ts']
+  future:
+    - action: 'Add integration tests for full notification flow'
+      refs: ['frontend/src/app/core/services/precipitation-alert.service.ts']
+    - action: 'Implement temperature-based precipitation type detection'
+      refs: ['backend/src/precipitation/precipitation-monitor.service.ts:147']
+    - action: 'Add monitoring/metrics for alert delivery success rate'
+      refs: ['frontend/src/app/core/services/notification.service.ts']
+    - action: 'Consider WebSocket support for real-time updates'
+      refs: ['frontend/src/app/core/services/precipitation-alert.service.ts']
+    - action: 'Implement exponential backoff for API failures'
+      refs: ['backend/src/precipitation/precipitation-monitor.service.ts']
+
+test_coverage:
+  backend_precipitation_service:
+    - 'Precipitation detection in next 15 minutes'
+    - 'No precipitation returns null'
+    - 'Cache utilization'
+    - 'API error handling'
+    - 'Cooldown enforcement (30 min)'
+    - 'Cooldown clearing'
+    - 'Multiple location checking'
+    - 'Null result filtering'
+  frontend_notification_service:
+    - 'Permission management'
+    - 'Preference persistence'
+    - 'Quiet hours detection'
+    - 'Location-specific alerts'
+    - 'Browser compatibility handling'
+    - 'Service worker integration fallback'
+
+acceptance_criteria_mapping:
+  ac1_monitor_precipitation:
+    implementation: 'PrecipitationMonitorService.checkPrecipitation()'
+    tests: ['should detect upcoming precipitation', 'should check multiple locations in parallel']
+  ac2_push_notification:
+    implementation: 'NotificationService.showPrecipitationAlert()'
+    tests: ['should show alert when all conditions are met', 'permission management tests']
+  ac3_alert_details:
+    implementation: 'PrecipitationAlert interface with type, intensity, duration'
+    tests: ['alert includes all required fields']
+  ac4_per_location_toggle:
+    implementation: 'NotificationService.setLocationAlertEnabled()'
+    tests: ['should set location alert preferences', 'should not show alert for disabled location']
+  ac5_quiet_hours:
+    implementation: 'NotificationService.isInQuietHours()'
+    tests: ['should detect quiet hours', 'should not show alert during quiet hours']
+  ac6_alert_cooldown:
+    implementation: 'PrecipitationMonitorService cooldown mechanism'
+    tests: ['should enforce cooldown period', 'should clear cooldown when requested']
+  ac7_visual_indicator:
+    implementation: 'WeatherCardComponent alert indicator with animation'
+    tests: ['component tests for alert display']
+  ac8_notification_api:
+    implementation: 'Service worker integration with fallback'
+    tests: ['browser compatibility handling', 'service worker tests']
+
+risk_assessment:
+  overall_risk: LOW
+  factors:
+    - type: 'API Rate Limits'
+      probability: LOW
+      impact: MEDIUM
+      mitigation: 'Caching and batch requests implemented'
+    - type: 'Browser Compatibility'
+      probability: LOW
+      impact: LOW
+      mitigation: 'Fallback mechanisms in place'
+    - type: 'Notification Spam'
+      probability: LOW
+      impact: MEDIUM
+      mitigation: '30-minute cooldown implemented'

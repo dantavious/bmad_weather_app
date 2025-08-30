@@ -1,0 +1,92 @@
+schema: 1
+story: '2.3'
+story_title: 'Click-Anywhere Weather Details'
+gate: CONCERNS
+status_reason: 'Mobile context menu (AC 8) incomplete and critical test coverage missing for map click handlers'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-08-29T00:00:00Z'
+
+top_issues:
+  - id: 'IMPL-001'
+    severity: medium
+    issue: 'Mobile long-press context menu not fully functional - AC 8 incomplete'
+    refs: ['frontend/src/app/features/map/map.component.ts:469-481']
+    suggested_owner: dev
+  - id: 'TEST-001'
+    severity: medium
+    issue: 'Missing unit tests for MapComponent click handlers'
+    refs: ['frontend/src/app/features/map/map.component.spec.ts']
+    suggested_owner: dev
+  - id: 'IMPL-002'
+    severity: low
+    issue: 'Touch coordinate to lat/lng conversion logic appears incorrect'
+    refs: ['frontend/src/app/features/map/map.component.ts:469-481']
+    suggested_owner: dev
+
+waiver:
+  active: false
+
+quality_score: 80  # 100 - (0*20) - (2*10) = 80
+expires: '2025-09-12T00:00:00Z'
+
+evidence:
+  tests_reviewed: 3
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]  # All except AC 8
+    ac_gaps: [8]  # Mobile long-press context menu not fully functional
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Geocoding properly proxied through backend, API keys protected, coordinate validation present'
+  performance:
+    status: PASS
+    notes: 'Good coordinate caching strategy, lazy loading, proper cleanup, session storage'
+  reliability:
+    status: PASS
+    notes: 'Comprehensive error handling with graceful fallbacks, proper null checks'
+  maintainability:
+    status: CONCERNS
+    notes: 'Missing test coverage reduces maintainability confidence, incomplete features'
+
+recommendations:
+  immediate:
+    - action: 'Fix touch coordinate to lat/lng conversion logic for mobile long-press'
+      refs: ['frontend/src/app/features/map/map.component.ts:469-481']
+    - action: 'Add unit tests for MapComponent.handleMapClick method'
+      refs: ['frontend/src/app/features/map/map.component.spec.ts']
+    - action: 'Add unit tests for MapComponent.setupMapClickHandlers method'
+      refs: ['frontend/src/app/features/map/map.component.spec.ts']
+    - action: 'Complete mobile context menu integration (currently defaults to weather display)'
+      refs: ['frontend/src/app/features/map/map.component.ts:658']
+  future:
+    - action: 'Consider extracting marker management to separate service for better testability'
+      refs: ['frontend/src/app/features/map/map.component.ts']
+    - action: 'Implement geocoding result caching to reduce API calls'
+      refs: ['backend/src/geocode/services/geocode.service.ts']
+    - action: 'Add integration tests for complete click-weather-display flow'
+      refs: ['frontend/src/app/features/map/']
+
+test_coverage:
+  weather_details_bottom_sheet: 100  # Excellent coverage
+  map_click_handlers: 0  # No tests
+  context_menu: 0  # No tests
+  recent_locations: 0  # No tests
+  
+implementation_status:
+  ac_1_click_trigger: complete
+  ac_2_bottom_sheet: complete  
+  ac_3_weather_details: complete
+  ac_4_add_button: complete
+  ac_5_loading_indicator: complete
+  ac_6_reverse_geocoding: complete
+  ac_7_recent_locations: complete
+  ac_8_mobile_long_press: incomplete
+
+architecture_notes:
+  - 'Excellent use of Angular 20 signals and computed properties'
+  - 'Clean component separation with standalone components'
+  - 'Good error handling patterns throughout'
+  - 'Proper use of RxJS operators and cleanup'
+  - 'Consistent coordinate rounding strategy (2 decimal places)'

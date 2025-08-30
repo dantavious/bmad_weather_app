@@ -1,0 +1,44 @@
+<div class="map-wrapper">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p class="loading-text">Loading map...</p>
+    </div>
+  }
+  
+  @if (hasError()) {
+    <div class="error-container">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h2>Unable to Load Map</h2>
+      <p>{{ errorMessage() }}</p>
+      <button mat-raised-button color="primary" (click)="retryMapLoad()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+  }
+  
+  <div 
+    #mapContainer 
+    class="map-container"
+    [class.map-hidden]="isLoading() || hasError()"
+    [class.map-fullscreen]="isFullscreen()">
+  </div>
+  
+  @if (!isLoading() && !hasError()) {
+    <button 
+      mat-fab 
+      color="accent"
+      class="fullscreen-button"
+      (click)="toggleFullscreen()"
+      [attr.aria-label]="isFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'">
+      <mat-icon>{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+    </button>
+    
+    <!-- Weather Layer Controls -->
+    <app-layer-control></app-layer-control>
+    
+    <!-- Weather Legend -->
+    <app-weather-legend></app-weather-legend>
+  }
+</div>

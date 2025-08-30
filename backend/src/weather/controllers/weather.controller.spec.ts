@@ -103,6 +103,7 @@ describe('WeatherController', () => {
       expect(openWeatherService.fetchCurrentWeather).toHaveBeenCalledWith(
         47.6,
         -122.3,
+        'imperial',
       );
       expect(cacheService.set).toHaveBeenCalledWith(
         'weather:current:47.6:-122.3',

@@ -1,0 +1,91 @@
+story: 2.1
+title: Google Maps Integration
+status: CONCERNS
+risk_level: MEDIUM
+reviewed_by: Quinn (Test Architect)
+review_date: 2025-08-28
+
+acceptance_criteria_coverage:
+  - AC1_map_displays: PASS - Map component properly displays in dedicated view
+  - AC2_geolocation: PASS - Centers on user location with permission, falls back to NYC
+  - AC3_controls: PASS - Standard zoom, pan, and map type controls configured
+  - AC4_responsive: PASS - Responsive design with fullscreen toggle implemented
+  - AC5_loading_state: PASS - Loading spinner shows during initialization
+  - AC6_error_handling: PASS - Error states and retry mechanism implemented
+  - AC7_api_key_security: FAIL - API key exposed in committed files without restrictions
+  - AC8_mobile_gestures: PASS - Touch gestures configured with greedy handling
+
+code_quality:
+  architecture: PASS - Clean separation of concerns, proper Angular 20 patterns
+  angular_patterns: PASS - Correct use of signals, inject(), standalone components
+  material_design: PASS - Proper MD3 integration with themed components
+  error_handling: PASS - Comprehensive error handling with user feedback
+  performance: CONCERNS - No lazy loading, script always injected
+  security: FAIL - API key exposed without domain restrictions
+
+test_coverage:
+  unit_tests: CONCERNS - 7 of 16 tests failing, incomplete coverage
+  integration_tests: PARTIAL - Geolocation flow tested but not full integration
+  mocking: PASS - Google Maps API properly mocked
+  coverage_percentage: UNKNOWN - Tests not fully passing
+
+security_assessment:
+  critical:
+    - API key exposed in source control without restrictions
+    - No domain/referrer restrictions configured
+    - Key visible in frontend code (acceptable but needs restrictions)
+  recommendations:
+    - Configure API key restrictions in Google Cloud Console immediately
+    - Add referrer restrictions for production domains
+    - Consider using environment-specific keys
+    - Enable only required APIs (Maps JavaScript, Places)
+
+performance_assessment:
+  concerns:
+    - Google Maps script loaded eagerly on component init
+    - No script caching mechanism
+    - ResizeObserver not properly cleaned up
+  recommendations:
+    - Consider lazy loading script only when map route accessed
+    - Implement script caching to avoid duplicate loads
+    - Ensure proper cleanup of observers
+
+technical_debt:
+  - Weather overlay interfaces defined but not implemented
+  - WeatherPopupComponent created but not integrated
+  - Missing E2E tests for full user flow
+  - Incomplete error recovery scenarios
+
+required_actions:
+  before_production:
+    - CRITICAL: Configure API key restrictions in Google Cloud Console
+    - CRITICAL: Fix failing unit tests (7 failures)
+    - HIGH: Add domain restrictions to API key
+    - HIGH: Implement proper cleanup for ResizeObserver
+  
+  before_next_sprint:
+    - MEDIUM: Add lazy loading for Google Maps script
+    - MEDIUM: Implement weather overlay functionality
+    - LOW: Add E2E tests for map interactions
+
+recommendations:
+  immediate:
+    - Secure the API key with proper restrictions
+    - Fix the 7 failing unit tests
+    - Add ResizeObserver cleanup
+  
+  future:
+    - Implement weather data overlays as specified
+    - Add clustering for multiple location markers
+    - Consider offline map caching for PWA
+
+notes: |
+  The implementation demonstrates good Angular 20 practices and proper Material Design 
+  integration. The core functionality works well with comprehensive error handling.
+  
+  However, the exposed API key without restrictions poses a significant security risk
+  that must be addressed before production deployment. The failing tests also need
+  immediate attention.
+  
+  Despite these concerns, the foundation is solid and with the security issues 
+  resolved, this would be production-ready.

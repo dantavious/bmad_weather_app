@@ -1,0 +1,101 @@
+<div class="weather-details-container">
+  <!-- Header with location name and close button -->
+  <div class="header">
+    <h2 class="location-name">{{ locationName() }}</h2>
+    <button mat-icon-button (click)="dismiss()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  
+  <mat-divider></mat-divider>
+  
+  <!-- Weather content -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (weather()) {
+    <div class="weather-content">
+      <!-- Main weather display -->
+      <div class="weather-main">
+        <div class="temperature-section">
+          <mat-icon class="weather-icon" [style.font-size.px]="48">{{ weatherIcon() }}</mat-icon>
+          <div class="temperature">{{ weather().temperature }}°F</div>
+        </div>
+        <div class="description">{{ weather().description }}</div>
+        <div class="feels-like">Feels like {{ weather().feelsLike }}°F</div>
+      </div>
+      
+      <!-- Weather details grid -->
+      <div class="weather-details-grid">
+        <div class="detail-item">
+          <mat-icon>air</mat-icon>
+          <div class="detail-content">
+            <span class="detail-label">Wind</span>
+            <span class="detail-value">{{ weather().windSpeed }} mph {{ windDirection() }}</span>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <mat-icon>water_drop</mat-icon>
+          <div class="detail-content">
+            <span class="detail-label">Humidity</span>
+            <span class="detail-value">{{ weather().humidity }}%</span>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <mat-icon>compress</mat-icon>
+          <div class="detail-content">
+            <span class="detail-label">Pressure</span>
+            <span class="detail-value">{{ weather().pressure }} hPa</span>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <mat-icon>visibility</mat-icon>
+          <div class="detail-content">
+            <span class="detail-label">Visibility</span>
+            <span class="detail-value">{{ (weather().visibility / 1609.34).toFixed(1) }} mi</span>
+          </div>
+        </div>
+        
+        @if (weather().cloudiness !== undefined) {
+          <div class="detail-item">
+            <mat-icon>cloud</mat-icon>
+            <div class="detail-content">
+              <span class="detail-label">Cloud Cover</span>
+              <span class="detail-value">{{ weather().cloudiness }}%</span>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <!-- Coordinates display -->
+      <div class="coordinates">
+        <mat-icon>location_on</mat-icon>
+        <span>{{ latitude().toFixed(4) }}°, {{ longitude().toFixed(4) }}°</span>
+      </div>
+    </div>
+  }
+  
+  <!-- Action buttons -->
+  <div class="actions">
+    @if (canAddLocation()) {
+      <button mat-raised-button color="primary" (click)="addToDashboard()" [disabled]="isLoading()">
+        <mat-icon>add</mat-icon>
+        Add to Dashboard
+      </button>
+    } @else {
+      <button mat-raised-button disabled>
+        <mat-icon>info</mat-icon>
+        Maximum Locations Reached
+      </button>
+    }
+    
+    <button mat-button (click)="shareLocation()">
+      <mat-icon>share</mat-icon>
+      Share
+    </button>
+  </div>
+</div>

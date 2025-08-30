@@ -56,7 +56,8 @@ export class WeatherController {
     const cacheKey = CacheKeys.weatherForecast(dto.latitude, dto.longitude);
 
     // Check cache first
-    const cachedForecast = await this.cacheService.get<DailyWeather[]>(cacheKey);
+    const cachedForecast =
+      await this.cacheService.get<DailyWeather[]>(cacheKey);
     if (cachedForecast) {
       return cachedForecast;
     }

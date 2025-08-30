@@ -3,6 +3,11 @@ import { App } from './app';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient } from '@angular/common/http';
+import { importProvidersFrom } from '@angular/core';
+import { MatDialogModule } from '@angular/material/dialog';
+import { A11yModule } from '@angular/cdk/a11y';
+import { PlatformModule } from '@angular/cdk/platform';
+import { LayoutModule } from '@angular/cdk/layout';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -11,7 +16,13 @@ describe('AppComponent', () => {
       providers: [
         provideRouter([]),
         provideAnimationsAsync(),
-        provideHttpClient()
+        provideHttpClient(),
+        importProvidersFrom(
+          MatDialogModule,
+          A11yModule,
+          PlatformModule,
+          LayoutModule
+        ),
       ]
     }).compileComponents();
   });

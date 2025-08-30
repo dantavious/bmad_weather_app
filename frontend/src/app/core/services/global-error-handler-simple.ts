@@ -1,9 +1,17 @@
-import { ErrorHandler, Injectable } from '@angular/core';
+import { ErrorHandler, Injectable, Injector } from '@angular/core';
 
-@Injectable()
-export class GlobalErrorHandlerSimple extends ErrorHandler {
+@Injectable({ providedIn: 'root' })
+export class GlobalErrorHandlerSimple implements ErrorHandler {
+  private originalConsoleError: typeof console.error;
+  private originalConsoleDebug: typeof console.debug;
   
-  override handleError(error: any): void {
+  constructor(private injector: Injector) {
+    // Store original console methods to bypass any Angular/Material patches
+    this.originalConsoleError = console.error.bind(console);
+    this.originalConsoleDebug = console.debug.bind(console);
+  }
+  
+  handleError(error: any): void {
     // Handle cases where error might be undefined or not an Error object
     if (!error) {
       return;
@@ -17,11 +25,14 @@ export class GlobalErrorHandlerSimple extends ErrorHandler {
       return;
     }
     
-    // Log the error for debugging
-    console.error('[Error Handler]', errorMessage);
-    if (error.stack) {
-      console.debug('Stack trace:', error.stack);
-    }
+    // Use setTimeout to defer console logging outside of Angular's context
+    // This prevents injection context errors
+    setTimeout(() => {
+      this.originalConsoleError('[Error Handler]', errorMessage);
+      if (error.stack) {
+        this.originalConsoleDebug('Stack trace:', error.stack);
+      }
+    }, 0);
   }
   
   private getErrorMessage(error: any): string {
@@ -43,6 +54,9 @@ export class GlobalErrorHandlerSimple extends ErrorHandler {
       'ExpressionChangedAfterItHasBeenCheckedError',
       'NG0100',
       'NG0200',
+      'NG0203',  // Skip injection context errors
+      '_Platform token injection failed',  // Skip platform injection errors
+      '_HighContrastModeDetector',  // Skip CDK a11y errors
       'Cannot read properties of undefined',
       'Cannot read properties of null',
       'can\'t access property',

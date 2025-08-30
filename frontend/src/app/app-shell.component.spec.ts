@@ -6,7 +6,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { ThemeService } from './core/services/theme.service';
 import { LoadingService } from './core/services/loading.service';
 import { signal } from '@angular/core';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { of } from 'rxjs';
+import { provideCdkPlatform } from './core/providers/cdk-providers';
 
 describe('AppShellComponent', () => {
   let component: AppShellComponent;
@@ -25,15 +27,21 @@ describe('AppShellComponent', () => {
       show: jest.fn(),
       hide: jest.fn()
     };
+    
+    const mockBreakpointObserver = {
+      observe: jest.fn().mockReturnValue(of({ matches: false }))
+    };
 
     await TestBed.configureTestingModule({
-      imports: [AppShellComponent, MatProgressBarModule],
+      imports: [AppShellComponent],
       providers: [
         provideRouter([]),
         provideAnimationsAsync(),
         provideHttpClient(),
         { provide: ThemeService, useValue: mockThemeService },
-        { provide: LoadingService, useValue: mockLoadingService }
+        { provide: LoadingService, useValue: mockLoadingService },
+        { provide: BreakpointObserver, useValue: mockBreakpointObserver },
+        ...provideCdkPlatform()
       ]
     }).compileComponents();
 

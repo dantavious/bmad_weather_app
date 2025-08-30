@@ -14,7 +14,9 @@ import { WeatherForecast, DailyWeather } from '@shared/models/weather.model';
 import { WeatherService } from '../../../../core/services/weather.service';
 import { SettingsService } from '../../../../core/services/settings.service';
 import { PrecipitationAlertService } from '../../../../core/services/precipitation-alert.service';
+import { LocationService } from '../../../../core/services/location.service';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
+import { AlertBadgeComponent, WeatherAlert } from '../alert-badge/alert-badge.component';
 
 @Component({
   selector: 'app-weather-card',
@@ -28,7 +30,8 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
     MatBadgeModule,
     MatTooltipModule,
     MatSlideToggleModule,
-    LoadingSkeletonComponent
+    LoadingSkeletonComponent,
+    AlertBadgeComponent
   ],
   animations: [
     trigger('flipState', [
@@ -73,17 +76,10 @@ import { LoadingSkeletonComponent } from '../../../../shared/components/loading-
               <button mat-button (click)="handleRetry($event)">Retry</button>
             </mat-card-content>
           } @else if (weather()) {
+            <app-alert-badge [alerts]="alerts()"></app-alert-badge>
             <mat-card-header>
               <mat-card-title>
                 {{ location.name }}
-                @if (hasAlert()) {
-                  <mat-icon 
-                    class="alert-indicator" 
-                    [matTooltip]="getAlertTooltip()"
-                    color="warn">
-                    notifications_active
-                  </mat-icon>
-                }
               </mat-card-title>
               @if (location.isPrimary) {
                 <mat-icon class="primary-badge" title="Primary Location">star</mat-icon>
@@ -490,6 +486,7 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
   private weatherService = inject(WeatherService);
   private settingsService = inject(SettingsService);
   private alertService = inject(PrecipitationAlertService);
+  private locationService = inject(LocationService);
   private destroy$ = new Subject<void>();
   
   weather = signal<WeatherForecast | null>(null);
@@ -505,11 +502,21 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
   alertInfo = signal<any>(null);
   alertsEnabled = signal(false);
   
+  // Weather alerts from NWS
+  alerts = signal<WeatherAlert[]>([]);
+  
   // Watch for alert changes - initialize as field to be in injection context
   private alertWatcher = effect(() => {
-    const alert = this.alertService.getAlertForLocation(this.location.id);
-    this.hasAlert.set(!!alert);
-    this.alertInfo.set(alert);
+    // Only run if location is available
+    if (this.location) {
+      const alert = this.alertService.getAlertForLocation(this.location.id);
+      this.hasAlert.set(!!alert);
+      this.alertInfo.set(alert);
+      
+      // Also update NWS alerts
+      const nwsAlertsSignal = this.locationService.getAlertsForLocation(this.location.id);
+      this.alerts.set(nwsAlertsSignal());
+    }
   });
   
   // Animation state
