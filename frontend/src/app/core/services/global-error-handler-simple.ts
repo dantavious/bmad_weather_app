@@ -1,9 +1,12 @@
-import { ErrorHandler, Injectable, Injector } from '@angular/core';
+import { ErrorHandler, Injectable, Injector, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorTrackingService } from './error-tracking.service';
 
 @Injectable({ providedIn: 'root' })
 export class GlobalErrorHandlerSimple implements ErrorHandler {
   private originalConsoleError: typeof console.error;
   private originalConsoleDebug: typeof console.debug;
+  private errorTrackingService?: ErrorTrackingService;
   
   constructor(private injector: Injector) {
     // Store original console methods to bypass any Angular/Material patches
@@ -28,9 +31,36 @@ export class GlobalErrorHandlerSimple implements ErrorHandler {
     // Use setTimeout to defer console logging outside of Angular's context
     // This prevents injection context errors
     setTimeout(() => {
-      this.originalConsoleError('[Error Handler]', errorMessage);
-      if (error.stack) {
-        this.originalConsoleDebug('Stack trace:', error.stack);
+      // Lazy load ErrorTrackingService to avoid injection context issues
+      if (!this.errorTrackingService) {
+        try {
+          this.errorTrackingService = this.injector.get(ErrorTrackingService);
+        } catch {
+          // Fallback to console if service can't be injected
+          this.originalConsoleError('[Error Handler]', errorMessage);
+          if (error.stack) {
+            this.originalConsoleDebug('Stack trace:', error.stack);
+          }
+          return;
+        }
+      }
+      
+      // Track error with structured logging
+      const context = {
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString()
+      };
+      
+      if (error instanceof HttpErrorResponse) {
+        this.errorTrackingService.logError(error, context);
+      } else if (error instanceof Error) {
+        this.errorTrackingService.logError(error, context);
+      } else {
+        // For non-Error objects, create an Error
+        const wrappedError = new Error(errorMessage);
+        wrappedError.stack = error.stack || '';
+        this.errorTrackingService.logError(wrappedError, context);
       }
     }, 0);
   }

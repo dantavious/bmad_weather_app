@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 async function bootstrap() {
@@ -25,7 +25,8 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // Use AllExceptionsFilter for comprehensive error handling
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   const port = process.env.PORT || 3000;

@@ -1,4 +1,5 @@
-import { ApplicationConfig, ErrorHandler, isDevMode, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, isDevMode, provideZoneChangeDetection, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -11,9 +12,10 @@ import { GlobalErrorHandlerSimple } from './core/services/global-error-handler-s
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes), // No preloading for optimal performance
     provideHttpClient(withInterceptors([loadingInterceptor])),
     provideAnimations(),
+    { provide: PLATFORM_ID, useValue: 'browser' },
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000'

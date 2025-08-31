@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { WeatherLocation } from '../../../../../../../shared/models/location.model';
 import { SolarPanel } from '../../../../../../../shared/models/solar.model';
 
@@ -219,6 +220,7 @@ export class SolarFormComponent {
   @Output() calculate = new EventEmitter<{ panel: SolarPanel; locationId: string }>();
 
   private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
   solarForm = this.fb.group({
     wattage: [400, [Validators.required, Validators.min(50), Validators.max(1000)]],
@@ -230,12 +232,14 @@ export class SolarFormComponent {
   systemCapacity = signal(0);
 
   constructor() {
-    this.solarForm.valueChanges.subscribe(values => {
-      if (values.wattage && values.quantity) {
-        const capacity = (values.wattage * values.quantity) / 1000;
-        this.systemCapacity.set(Math.round(capacity * 10) / 10);
-      }
-    });
+    this.solarForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(values => {
+        if (values.wattage && values.quantity) {
+          const capacity = (values.wattage * values.quantity) / 1000;
+          this.systemCapacity.set(Math.round(capacity * 10) / 10);
+        }
+      });
   }
 
   onSubmit() {

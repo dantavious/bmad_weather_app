@@ -11,6 +11,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { ThemeService } from './core/services/theme.service';
 import { LoadingService } from './core/services/loading.service';
+import { AnalyticsService } from './core/services/analytics.service';
 import { InstallBannerComponent } from './shared/components/install-banner/install-banner.component';
 import { OfflineIndicatorComponent } from './shared/components/offline-indicator/offline-indicator.component';
 
@@ -163,12 +164,16 @@ export class AppShellComponent {
   private readonly themeService = inject(ThemeService);
   private readonly loadingService = inject(LoadingService);
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly analyticsService = inject(AnalyticsService);
 
   isDarkMode = this.themeService.isDarkMode;
   isLoading = this.loadingService.isLoading;
   isHandset = signal(false);
   
   constructor() {
+    // Initialize analytics service (it auto-tracks page views and performance)
+    // The service is injected to ensure it's instantiated
+    
     // Subscribe to breakpoint changes
     this.breakpointObserver.observe(['(max-width: 768px)']).subscribe(result => {
       this.isHandset.set(result.matches);
@@ -177,5 +182,7 @@ export class AppShellComponent {
   
   toggleTheme() {
     this.themeService.toggleTheme();
+    // Track theme toggle interaction
+    this.analyticsService.trackEvent('theme_toggle', this.isDarkMode() ? 'dark' : 'light');
   }
 }

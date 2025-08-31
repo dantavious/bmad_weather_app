@@ -11,6 +11,7 @@ import { PrecipitationModule } from './precipitation/precipitation.module';
 import { NwsModule } from './nws/nws.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { SolarModule } from './solar/solar.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SolarModule } from './solar/solar.module';
     NwsModule,
     ActivitiesModule,
     SolarModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
