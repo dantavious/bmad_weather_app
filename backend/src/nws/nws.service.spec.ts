@@ -72,7 +72,7 @@ describe('NwsService', () => {
 
     service = module.get<NwsService>(NwsService);
     httpService = module.get<HttpService>(HttpService);
-    
+
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
     jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
     jest.spyOn(Logger.prototype, 'debug').mockImplementation(() => {});
@@ -86,9 +86,11 @@ describe('NwsService', () => {
 
   describe('fetchActiveAlerts', () => {
     it('should fetch and parse NWS alerts correctly', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(of(mockNWSResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(mockNWSResponse as any));
 
-      const alerts = await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      const alerts = await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
 
       expect(alerts).toHaveLength(3);
       expect(alerts[0]).toMatchObject({
@@ -104,25 +106,35 @@ describe('NwsService', () => {
     });
 
     it('should return cached alerts within cache time', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(of(mockNWSResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(mockNWSResponse as any));
 
-      const alerts1 = await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
-      const alerts2 = await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      const alerts1 = await service.fetchActiveAlerts(
+        40.7128,
+        -74.006,
+        'loc-1',
+      );
+      const alerts2 = await service.fetchActiveAlerts(
+        40.7128,
+        -74.006,
+        'loc-1',
+      );
 
       expect(httpService.get).toHaveBeenCalledTimes(1);
       expect(alerts1).toEqual(alerts2);
     });
 
     it('should handle API errors gracefully', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        throwError(() => new Error('Network error'))
-      );
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(throwError(() => new Error('Network error')));
 
-      const alerts = await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      const alerts = await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
 
       expect(alerts).toEqual([]);
       expect(Logger.prototype.error).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to fetch NWS alerts')
+        expect.stringContaining('Failed to fetch NWS alerts'),
       );
     });
 
@@ -148,9 +160,11 @@ describe('NwsService', () => {
         },
       };
 
-      jest.spyOn(httpService, 'get').mockReturnValue(of(expiredResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(expiredResponse as any));
 
-      const alerts = await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      const alerts = await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
 
       expect(alerts).toHaveLength(0);
     });
@@ -219,9 +233,11 @@ describe('NwsService', () => {
         },
       };
 
-      jest.spyOn(httpService, 'get').mockReturnValue(of(severityTestResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(severityTestResponse as any));
 
-      const alerts = await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      const alerts = await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
 
       expect(alerts[0].alertType).toBe(AlertSeverity.WARNING);
       expect(alerts[1].alertType).toBe(AlertSeverity.WATCH);
@@ -232,9 +248,11 @@ describe('NwsService', () => {
 
   describe('getHistoricalAlerts', () => {
     it('should return historical alerts for a location', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(of(mockNWSResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(mockNWSResponse as any));
 
-      await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
       const historical = service.getHistoricalAlerts('loc-1');
 
       expect(historical).toHaveLength(3);
@@ -254,8 +272,12 @@ describe('NwsService', () => {
                 certainty: 'Observed',
                 urgency: 'Past',
                 event: 'Old Warning',
-                effective: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
-                expires: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(),
+                effective: new Date(
+                  Date.now() - 25 * 60 * 60 * 1000,
+                ).toISOString(),
+                expires: new Date(
+                  Date.now() + 1 * 60 * 60 * 1000,
+                ).toISOString(),
                 status: 'Actual',
               },
             },
@@ -265,7 +287,7 @@ describe('NwsService', () => {
 
       jest.spyOn(httpService, 'get').mockReturnValue(of(oldAlert as any));
 
-      await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
       const historical = service.getHistoricalAlerts('loc-1');
 
       expect(historical).toHaveLength(0);
@@ -282,14 +304,18 @@ describe('NwsService', () => {
       const callback = jest.fn();
       service.registerLocationCallback('40.71,-74.01', callback);
 
-      jest.spyOn(httpService, 'get').mockReturnValue(of(mockNWSResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(mockNWSResponse as any));
       await service.checkAllLocationAlerts();
 
-      expect(callback).toHaveBeenCalledWith(expect.arrayContaining([
-        expect.objectContaining({
-          alertType: AlertSeverity.WARNING,
-        }),
-      ]));
+      expect(callback).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            alertType: AlertSeverity.WARNING,
+          }),
+        ]),
+      );
     });
 
     it('should unregister location callbacks', async () => {
@@ -314,11 +340,13 @@ describe('NwsService', () => {
 
   describe('clearCache', () => {
     it('should clear the alert cache', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(of(mockNWSResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(mockNWSResponse as any));
 
-      await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
       service.clearCache();
-      await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
 
       expect(httpService.get).toHaveBeenCalledTimes(2);
     });
@@ -326,9 +354,11 @@ describe('NwsService', () => {
 
   describe('clearHistoricalAlerts', () => {
     it('should clear historical alerts for specific location', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(of(mockNWSResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(mockNWSResponse as any));
 
-      await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
       service.clearHistoricalAlerts('loc-1');
       const historical = service.getHistoricalAlerts('loc-1');
 
@@ -336,9 +366,11 @@ describe('NwsService', () => {
     });
 
     it('should clear all historical alerts when no location specified', async () => {
-      jest.spyOn(httpService, 'get').mockReturnValue(of(mockNWSResponse as any));
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of(mockNWSResponse as any));
 
-      await service.fetchActiveAlerts(40.7128, -74.0060, 'loc-1');
+      await service.fetchActiveAlerts(40.7128, -74.006, 'loc-1');
       await service.fetchActiveAlerts(41.8781, -87.6298, 'loc-2');
       service.clearHistoricalAlerts();
 

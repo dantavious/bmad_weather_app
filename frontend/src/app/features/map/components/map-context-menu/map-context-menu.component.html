@@ -1,18 +1,21 @@
-<mat-menu #contextMenu="matMenu" class="map-context-menu">
-  @for (action of menuActions(); track action.action) {
-    <button 
-      mat-menu-item 
-      [disabled]="action.disabled"
-      (click)="onActionClick(action.action)">
-      <mat-icon>{{ action.icon }}</mat-icon>
-      <span>{{ action.label }}</span>
-    </button>
-  }
-  
-  <mat-divider></mat-divider>
-  
-  <div class="coordinates-display">
-    <mat-icon>location_on</mat-icon>
-    <span>{{ latitude.toFixed(4) }}°, {{ longitude.toFixed(4) }}°</span>
+<div class="map-context-menu" @slideUp>
+  <div class="menu-content">
+    @for (action of menuActions(); track action.action) {
+      <button 
+        mat-button
+        class="menu-item"
+        [disabled]="action.disabled"
+        (click)="onActionClick(action.action)">
+        <mat-icon>{{ action.icon }}</mat-icon>
+        <span>{{ action.label }}</span>
+      </button>
+    }
+    
+    <mat-divider></mat-divider>
+    
+    <div class="coordinates-display">
+      <mat-icon>location_on</mat-icon>
+      <span>{{ latitude.toFixed(4) }}°, {{ longitude.toFixed(4) }}°</span>
+    </div>
   </div>
-</mat-menu>
+</div>

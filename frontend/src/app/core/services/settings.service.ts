@@ -1,9 +1,11 @@
 import { Injectable, signal, effect } from '@angular/core';
+import { ActivitySettings, ActivityType } from '../../../../../shared/models/activity.model';
 
 export interface UserSettings {
   units: 'imperial' | 'metric';
   theme: 'light' | 'dark' | 'auto';
   notifications: boolean;
+  activitySettings?: ActivitySettings;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -13,7 +15,12 @@ export class SettingsService {
   private defaultSettings: UserSettings = {
     units: 'imperial',
     theme: 'auto',
-    notifications: true
+    notifications: true,
+    activitySettings: {
+      showActivities: true,
+      enabledActivities: Object.values(ActivityType),
+      showBestHours: true
+    }
   };
   
   settings = signal<UserSettings>(this.loadSettings());
@@ -61,5 +68,38 @@ export class SettingsService {
   
   getUnits(): 'imperial' | 'metric' {
     return this.settings().units;
+  }
+  
+  getActivitySettings(): ActivitySettings | undefined {
+    return this.settings().activitySettings;
+  }
+  
+  updateActivitySettings(settings: ActivitySettings): void {
+    this.settings.update(current => ({ 
+      ...current, 
+      activitySettings: settings 
+    }));
+  }
+  
+  toggleActivity(activityType: ActivityType): void {
+    this.settings.update(current => {
+      const currentSettings = current.activitySettings || {
+        showActivities: true,
+        enabledActivities: Object.values(ActivityType),
+        showBestHours: true
+      };
+      
+      const enabledActivities = currentSettings.enabledActivities.includes(activityType)
+        ? currentSettings.enabledActivities.filter((a: ActivityType) => a !== activityType)
+        : [...currentSettings.enabledActivities, activityType];
+      
+      return {
+        ...current,
+        activitySettings: {
+          ...currentSettings,
+          enabledActivities
+        }
+      };
+    });
   }
 }

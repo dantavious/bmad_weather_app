@@ -222,11 +222,38 @@ constructor(private http: HttpClient) {} // ❌ AVOID
 provideBrowserGlobalErrorListeners() // ❌ REMOVE THIS
 ```
 
+5. **CDK Modules at App Level** - CRITICAL: Causes NG0203
+```typescript
+// NEVER DO THIS in app.config.ts - Causes NG0203 error
+import { importProvidersFrom } from '@angular/core';
+import { PlatformModule } from '@angular/cdk/platform';
+import { A11yModule } from '@angular/cdk/a11y';
+import { LayoutModule } from '@angular/cdk/layout';
+
+export const appConfig = {
+  providers: [
+    // ❌ NEVER DO THIS - Causes NG0203
+    importProvidersFrom(PlatformModule, A11yModule, LayoutModule)
+  ]
+}
+```
+
 ## Common Error Solutions
 
 ### NG0203: inject() must be called from an injection context
 
-**Problem:** Calling inject() outside of constructor/field initializer
+**Most Common Cause:** CDK modules imported at app level
+**Solution:** Remove ALL CDK module imports from app.config.ts
+```typescript
+// Remove these lines from app.config.ts:
+import { importProvidersFrom } from '@angular/core';
+import { PlatformModule } from '@angular/cdk/platform';
+import { A11yModule } from '@angular/cdk/a11y';
+import { LayoutModule } from '@angular/cdk/layout';
+// And remove: importProvidersFrom(PlatformModule, A11yModule, LayoutModule)
+```
+
+**Other Cause:** Calling inject() outside of constructor/field initializer
 **Solution:**
 ```typescript
 // WRONG

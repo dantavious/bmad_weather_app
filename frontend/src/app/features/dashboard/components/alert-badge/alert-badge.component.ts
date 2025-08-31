@@ -4,6 +4,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
+import { ThemePalette } from '@angular/material/core';
 
 export enum AlertSeverity {
   WARNING = 'warning',
@@ -87,7 +88,7 @@ export class AlertBadgeComponent {
     return null;
   });
 
-  getBadgeColor(): string {
+  getBadgeColor(): ThemePalette {
     const severity = this.highestSeverity();
     switch (severity) {
       case AlertSeverity.WARNING:

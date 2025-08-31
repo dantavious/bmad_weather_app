@@ -13,6 +13,24 @@
 
 ## Angular 20 Specific Patterns
 
+### Critical Angular 20 Rules - MUST FOLLOW
+
+#### CDK Module Import Rules (CRITICAL - Prevents NG0203 Errors)
+- **NEVER import CDK modules at application level** using `importProvidersFrom`
+- **DO NOT add** `PlatformModule`, `A11yModule`, `LayoutModule` to app.config.ts
+- CDK services (like `BreakpointObserver`) work through dependency injection without module imports
+- Material components automatically handle their CDK dependencies
+- **INCORRECT (Causes NG0203):**
+  ```typescript
+  // app.config.ts - NEVER DO THIS
+  importProvidersFrom(PlatformModule, A11yModule, LayoutModule)
+  ```
+- **CORRECT:**
+  ```typescript
+  // Just inject the service directly in components
+  private breakpointObserver = inject(BreakpointObserver);
+  ```
+
 ### Dependency Injection
 - **MANDATORY:** Use `inject()` function over constructor injection
 - Place inject() calls in field initializers or constructors only
@@ -86,3 +104,42 @@ export class WeatherComponent {
 | Methods | camelCase | camelCase | `getCurrentWeather()` |
 | API Routes | - | kebab-case | `/api/weather-alerts` |
 | Files | kebab-case | kebab-case | `weather-card.component.ts` |
+
+## Common Angular 20 Errors and Solutions
+
+### NG0203: inject() must be called from an injection context
+
+**Common Causes:**
+1. **CDK modules imported at app level** - Most common cause!
+   - Remove `importProvidersFrom(PlatformModule, A11yModule, LayoutModule)` from app.config.ts
+   - CDK services work without explicit module imports in Angular 20
+
+2. **Corrupted node_modules or cache**
+   - Solution: Clean reinstall (see troubleshooting/angular-cli-cache.md)
+   ```bash
+   rm -rf frontend/node_modules frontend/package-lock.json
+   rm -rf frontend/.angular
+   npm cache clean --force
+   npm install --prefix frontend
+   ```
+
+3. **inject() called outside proper context**
+   - Only call inject() in constructors or field initializers
+   - Never in methods or lifecycle hooks
+
+### Service Worker Navigation Issues
+
+**Problem:** Routes show blank pages or stale content
+**Solution:** 
+- Ensure navigation requests use network-first strategy
+- Update cache version when modifying service worker
+- Add new routes to static cache list
+- Use `networkFirstForNavigation` for SPA routes
+
+### Wildcard Routes Breaking Lazy Loading
+
+**Problem:** NotFound component catching valid routes
+**Solution:** 
+- Be cautious with wildcard routes (`**`)
+- Ensure they're last in route configuration
+- Consider removing if causing issues with lazy loading

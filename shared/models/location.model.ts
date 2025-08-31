@@ -23,3 +23,13 @@ export interface LocationSearchResult {
   lat: number;
   lon: number;
 }
+
+// Simplified Location interface for components that don't need full WeatherLocation
+export interface Location {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  isCurrentLocation?: boolean;
+  order: number;
+}

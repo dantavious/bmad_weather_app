@@ -32,7 +32,7 @@ export class AlertService {
   
   private alertsMap = new Map<string, BehaviorSubject<WeatherAlert[]>>();
   private previousAlerts = new Map<string, Set<string>>();
-  private apiUrl = `${environment.apiUrl}/api/alerts`;
+  private apiUrl = `${environment.apiUrl}/alerts`;
   
   fetchAlerts(locationId: string, lat: number, lon: number): Observable<WeatherAlert[]> {
     if (!this.alertsMap.has(locationId)) {

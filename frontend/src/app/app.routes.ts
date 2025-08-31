@@ -23,7 +23,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/components/precipitation-alert-settings/precipitation-alert-settings.component').then(m => m.PrecipitationAlertSettingsComponent)
   },
   {
-    path: '**',
-    loadComponent: () => import('./shared/components/not-found/not-found.component').then(m => m.NotFoundComponent)
+    path: 'solar',
+    loadComponent: () => import('./features/solar/solar.component').then(m => m.SolarCalculatorComponent)
   }
 ];

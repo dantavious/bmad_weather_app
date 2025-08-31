@@ -71,7 +71,7 @@ export class PrecipitationMonitorService {
       );
 
       const minutely: MinutelyData[] = response.data.minutely || [];
-      
+
       // Analyze precipitation in next 15 minutes
       const alert = this.analyzePrecipitation(
         minutely.slice(0, 15),
@@ -122,7 +122,7 @@ export class PrecipitationMonitorService {
     // Calculate intensity and duration
     let totalPrecipitation = 0;
     let endIndex = startIndex;
-    
+
     for (let i = startIndex; i < minutelyData.length; i++) {
       if (minutelyData[i].precipitation >= this.PRECIPITATION_THRESHOLD) {
         totalPrecipitation += minutelyData[i].precipitation;
@@ -170,9 +170,7 @@ export class PrecipitationMonitorService {
     if (lastAlert) {
       const timeSinceLastAlert = Date.now() - lastAlert.getTime();
       if (timeSinceLastAlert < this.ALERT_COOLDOWN_MS) {
-        this.logger.debug(
-          `Alert for ${locationId} suppressed due to cooldown`,
-        );
+        this.logger.debug(`Alert for ${locationId} suppressed due to cooldown`);
         return null;
       }
     }
@@ -186,12 +184,12 @@ export class PrecipitationMonitorService {
     locations: Array<{ id: string; lat: number; lon: number }>,
   ): Promise<PrecipitationAlert[]> {
     const alerts = await Promise.all(
-      locations.map((loc) =>
-        this.checkPrecipitation(loc.lat, loc.lon, loc.id),
-      ),
+      locations.map((loc) => this.checkPrecipitation(loc.lat, loc.lon, loc.id)),
     );
 
-    return alerts.filter((alert): alert is PrecipitationAlert => alert !== null);
+    return alerts.filter(
+      (alert): alert is PrecipitationAlert => alert !== null,
+    );
   }
 
   clearCooldown(locationId: string): void {

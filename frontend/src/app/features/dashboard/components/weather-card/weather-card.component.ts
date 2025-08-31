@@ -17,6 +17,10 @@ import { PrecipitationAlertService } from '../../../../core/services/precipitati
 import { LocationService } from '../../../../core/services/location.service';
 import { LoadingSkeletonComponent } from '../../../../shared/components/loading-skeleton/loading-skeleton.component';
 import { AlertBadgeComponent, WeatherAlert } from '../alert-badge/alert-badge.component';
+import { ActivityChipsComponent } from '../activity-chips/activity-chips.component';
+import { ActivityDetailsComponent } from '../activity-details/activity-details.component';
+import { ActivityRecommendation, ActivityType } from '@shared/models/activity.model';
+import { ActivityService } from '../../../../core/services/activity.service';
 
 @Component({
   selector: 'app-weather-card',
@@ -31,7 +35,9 @@ import { AlertBadgeComponent, WeatherAlert } from '../alert-badge/alert-badge.co
     MatTooltipModule,
     MatSlideToggleModule,
     LoadingSkeletonComponent,
-    AlertBadgeComponent
+    AlertBadgeComponent,
+    ActivityChipsComponent,
+    ActivityDetailsComponent
   ],
   animations: [
     trigger('flipState', [
@@ -119,6 +125,20 @@ import { AlertBadgeComponent, WeatherAlert } from '../alert-badge/alert-badge.co
                   Alerts
                 </mat-slide-toggle>
               </div>
+              @if (activitySettings()?.showActivities && activityRecommendations().length > 0) {
+                <app-activity-chips
+                  [recommendations]="activityRecommendations()"
+                  [settings]="activitySettings()"
+                  (activitySelected)="onActivitySelected($event)"
+                  (click)="$event.stopPropagation()">
+                </app-activity-chips>
+                @if (selectedActivity()) {
+                  <app-activity-details
+                    [inputRecommendation]="selectedActivity()!"
+                    (click)="$event.stopPropagation()">
+                  </app-activity-details>
+                }
+              }
             </mat-card-content>
           }
         </mat-card>
@@ -482,11 +502,13 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
   @Input({ required: true }) location!: WeatherLocation;
   @Input() isFlipped = signal(false);
   @Output() flipped = new EventEmitter<boolean>();
+  @Output() activityDetailsRequested = new EventEmitter<ActivityRecommendation>();
   
   private weatherService = inject(WeatherService);
   private settingsService = inject(SettingsService);
   private alertService = inject(PrecipitationAlertService);
   private locationService = inject(LocationService);
+  private activityService = inject(ActivityService);
   private destroy$ = new Subject<void>();
   
   weather = signal<WeatherForecast | null>(null);
@@ -504,6 +526,11 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
   
   // Weather alerts from NWS
   alerts = signal<WeatherAlert[]>([]);
+  
+  // Activity recommendations
+  activityRecommendations = signal<ActivityRecommendation[]>([]);
+  activitySettings = signal(this.settingsService.getActivitySettings());
+  selectedActivity = signal<ActivityRecommendation | null>(null);
   
   // Watch for alert changes - initialize as field to be in injection context
   private alertWatcher = effect(() => {
@@ -532,6 +559,7 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
     this.subscribeToWeatherUpdates();
     this.checkForAlerts();
     this.loadAlertSettings();
+    this.loadActivityRecommendations();
   }
   
   ngOnDestroy() {
@@ -744,6 +772,49 @@ export class WeatherCardComponent implements OnInit, OnDestroy {
     const intensity = alert.intensity.charAt(0).toUpperCase() + alert.intensity.slice(1);
     
     return `${intensity} ${type} starting in ${alert.minutesToStart} minutes`;
+  }
+  
+  private loadActivityRecommendations(): void {
+    const units = this.settingsService.getUnits();
+    const activitySettings = this.settingsService.getActivitySettings();
+    
+    // Ensure we have proper defaults if settings are missing
+    const settingsWithDefaults = activitySettings || {
+      showActivities: true,
+      enabledActivities: Object.values(ActivityType),
+      showBestHours: true
+    };
+    
+    // Update the local signal with settings
+    this.activitySettings.set(settingsWithDefaults);
+    
+    // Only fetch if showActivities is true
+    if (settingsWithDefaults.showActivities) {
+      this.activityService.getRecommendations(
+        this.location.latitude,
+        this.location.longitude,
+        units,
+        settingsWithDefaults
+      ).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: (recommendations) => {
+          this.activityRecommendations.set(recommendations);
+          console.log('Activity recommendations loaded:', recommendations);
+        },
+        error: (err) => {
+          console.error('Error loading activity recommendations:', err);
+          this.activityRecommendations.set([]);
+        }
+      });
+    } else {
+      console.log('Activity recommendations disabled in settings');
+    }
+  }
+  
+  onActivitySelected(activity: ActivityRecommendation): void {
+    this.selectedActivity.set(activity);
+    this.activityDetailsRequested.emit(activity);
   }
   
   loadAlertSettings(): void {

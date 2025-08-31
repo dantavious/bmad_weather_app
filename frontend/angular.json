@@ -30,9 +30,12 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/service-worker.js",
+              "src/manifest.json",
+              "src/favicon.ico",
+              "src/assets"
             ],
-            "serviceWorker": "ngsw-config.json",
             "styles": [
               "src/styles.scss"
             ]

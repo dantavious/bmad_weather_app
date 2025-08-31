@@ -70,9 +70,9 @@ describe('PrecipitationMonitorService', () => {
     it('should detect upcoming precipitation', async () => {
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);
       jest.spyOn(cacheService, 'set').mockResolvedValue(undefined);
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        of({ data: mockMinutelyData } as any),
-      );
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of({ data: mockMinutelyData } as any));
 
       const result = await service.checkPrecipitation(
         40.7128,
@@ -88,16 +88,18 @@ describe('PrecipitationMonitorService', () => {
 
     it('should return null when no precipitation in next 15 minutes', async () => {
       const noPrecipData = {
-        minutely: Array(15).fill(null).map((_, i) => ({
-          dt: Date.now() / 1000 + i * 60,
-          precipitation: 0,
-        })),
+        minutely: Array(15)
+          .fill(null)
+          .map((_, i) => ({
+            dt: Date.now() / 1000 + i * 60,
+            precipitation: 0,
+          })),
       };
 
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        of({ data: noPrecipData } as any),
-      );
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of({ data: noPrecipData } as any));
 
       const result = await service.checkPrecipitation(
         40.7128,
@@ -135,9 +137,9 @@ describe('PrecipitationMonitorService', () => {
 
     it('should handle API errors gracefully', async () => {
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        throwError(() => new Error('API Error')),
-      );
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(throwError(() => new Error('API Error')));
 
       const result = await service.checkPrecipitation(
         40.7128,
@@ -152,9 +154,9 @@ describe('PrecipitationMonitorService', () => {
   describe('cooldown management', () => {
     it('should enforce cooldown period', async () => {
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        of({ data: mockMinutelyData } as any),
-      );
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of({ data: mockMinutelyData } as any));
 
       // First call should succeed
       const result1 = await service.checkPrecipitation(
@@ -175,16 +177,16 @@ describe('PrecipitationMonitorService', () => {
 
     it('should clear cooldown when requested', async () => {
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        of({ data: mockMinutelyData } as any),
-      );
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of({ data: mockMinutelyData } as any));
 
       // First call
       await service.checkPrecipitation(40.7128, -74.006, 'test-location');
-      
+
       // Clear cooldown
       service.clearCooldown('test-location');
-      
+
       // Should be able to get alert again
       const result = await service.checkPrecipitation(
         40.7128,
@@ -201,12 +203,12 @@ describe('PrecipitationMonitorService', () => {
 
       // Set cooldown by checking precipitation
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        of({ data: mockMinutelyData } as any),
-      );
-      
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of({ data: mockMinutelyData } as any));
+
       await service.checkPrecipitation(40.7128, -74.006, 'test-location');
-      
+
       // Should be in cooldown
       status = service.getCooldownStatus('test-location');
       expect(status.inCooldown).toBe(true);
@@ -225,9 +227,9 @@ describe('PrecipitationMonitorService', () => {
       ];
 
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);
-      jest.spyOn(httpService, 'get').mockReturnValue(
-        of({ data: mockMinutelyData } as any),
-      );
+      jest
+        .spyOn(httpService, 'get')
+        .mockReturnValue(of({ data: mockMinutelyData } as any));
 
       const results = await service.checkMultipleLocations(locations);
 
@@ -244,10 +246,12 @@ describe('PrecipitationMonitorService', () => {
       ];
 
       const noPrecipData = {
-        minutely: Array(15).fill(null).map((_, i) => ({
-          dt: Date.now() / 1000 + i * 60,
-          precipitation: 0,
-        })),
+        minutely: Array(15)
+          .fill(null)
+          .map((_, i) => ({
+            dt: Date.now() / 1000 + i * 60,
+            precipitation: 0,
+          })),
       };
 
       jest.spyOn(cacheService, 'get').mockResolvedValue(null);

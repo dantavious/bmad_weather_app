@@ -1,6 +1,10 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
+  "appData": {
+    "version": "2.0.0",
+    "name": "BMad Weather Dashboard"
+  },
   "assetGroups": [
     {
       "name": "app",
@@ -8,11 +12,14 @@
       "resources": {
         "files": [
           "/favicon.ico",
-          "/index.csr.html",
           "/index.html",
-          "/manifest.webmanifest",
+          "/manifest.json",
           "/*.css",
           "/*.js"
+        ],
+        "urls": [
+          "https://fonts.googleapis.com/**",
+          "https://fonts.gstatic.com/**"
         ]
       }
     },
@@ -22,7 +29,8 @@
       "updateMode": "prefetch",
       "resources": {
         "files": [
-          "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+          "/assets/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
         ]
       }
     }
@@ -31,14 +39,61 @@
     {
       "name": "weather-api",
       "urls": [
-        "/api/weather/**",
+        "/api/weather/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 50,
+        "maxAge": "5m",
+        "timeout": "10s",
+        "strategy": "performance"
+      },
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      }
+    },
+    {
+      "name": "locations-api",
+      "urls": [
+        "/api/locations/**",
         "/api/geocode/**"
       ],
       "cacheConfig": {
-        "maxSize": 100,
-        "maxAge": "5m",
+        "maxSize": 30,
+        "maxAge": "15m",
         "timeout": "10s",
+        "strategy": "performance"
+      },
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      }
+    },
+    {
+      "name": "alerts-api",
+      "urls": [
+        "/api/alerts/**",
+        "/api/precipitation/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 20,
+        "maxAge": "10m",
+        "timeout": "5s",
         "strategy": "freshness"
+      },
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      }
+    },
+    {
+      "name": "maps-api",
+      "urls": [
+        "https://maps.googleapis.com/**",
+        "https://tile.openweathermap.org/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1h",
+        "timeout": "10s",
+        "strategy": "performance"
       },
       "cacheQueryOptions": {
         "ignoreVary": true
@@ -49,6 +104,8 @@
     "/**",
     "!/**/*.*",
     "!/**/*__*",
-    "!/**/*__*/**"
-  ]
+    "!/**/*__*/**",
+    "!/api/**"
+  ],
+  "navigationRequestStrategy": "performance"
 }

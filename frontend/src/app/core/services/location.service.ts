@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { Injectable, inject, signal, computed, effect, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of, from, combineLatest } from 'rxjs';
 import { catchError, tap, switchMap, map } from 'rxjs/operators';
@@ -22,7 +22,7 @@ export class LocationService {
   public locations = computed(() => this.locationsSignal());
   
   // Alerts state
-  private locationAlertsMap = new Map<string, signal<WeatherAlert[]>>();
+  private locationAlertsMap = new Map<string, WritableSignal<WeatherAlert[]>>();
   
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
@@ -195,7 +195,7 @@ export class LocationService {
     this.alertService.clearAlerts(locationId);
   }
   
-  getAlertsForLocation(locationId: string): signal<WeatherAlert[]> {
+  getAlertsForLocation(locationId: string): WritableSignal<WeatherAlert[]> {
     let alertsSignal = this.locationAlertsMap.get(locationId);
     if (!alertsSignal) {
       alertsSignal = signal<WeatherAlert[]>([]);

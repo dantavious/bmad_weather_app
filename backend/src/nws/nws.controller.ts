@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Logger,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { NwsService, WeatherAlert } from './nws.service';
 
 @Controller('api/alerts')
@@ -16,13 +24,19 @@ export class NwsController {
     try {
       const latitude = parseFloat(lat);
       const longitude = parseFloat(lon);
-      
+
       if (isNaN(latitude) || isNaN(longitude)) {
         throw new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST);
       }
-      
-      this.logger.log(`Fetching active alerts for location ${locationId} at ${latitude},${longitude}`);
-      return await this.nwsService.fetchActiveAlerts(latitude, longitude, locationId);
+
+      this.logger.log(
+        `Fetching active alerts for location ${locationId} at ${latitude},${longitude}`,
+      );
+      return await this.nwsService.fetchActiveAlerts(
+        latitude,
+        longitude,
+        locationId,
+      );
     } catch (error) {
       this.logger.error(`Failed to get active alerts: ${error.message}`);
       if (error instanceof HttpException) {

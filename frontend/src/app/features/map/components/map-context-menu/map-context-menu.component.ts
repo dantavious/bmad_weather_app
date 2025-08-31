@@ -1,9 +1,9 @@
 import { Component, inject, signal, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 export interface ContextMenuAction {
   icon: string;
@@ -17,13 +17,20 @@ export interface ContextMenuAction {
   standalone: true,
   imports: [
     CommonModule,
-    MatMenuModule,
     MatButtonModule,
     MatIconModule,
     MatDividerModule
   ],
   templateUrl: './map-context-menu.component.html',
-  styleUrls: ['./map-context-menu.component.scss']
+  styleUrls: ['./map-context-menu.component.scss'],
+  animations: [
+    trigger('slideUp', [
+      transition(':enter', [
+        style({ transform: 'translateY(10px)', opacity: 0 }),
+        animate('200ms ease-out', style({ transform: 'translateY(0)', opacity: 1 }))
+      ])
+    ])
+  ]
 })
 export class MapContextMenuComponent {
   @Input() latitude = 0;

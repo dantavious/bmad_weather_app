@@ -57,11 +57,22 @@ describe('DashboardComponent', () => {
       locations$: of(mockLocations),
       loading$: of(false),
       error$: of(null),
+      locations: jest.fn().mockReturnValue(mockLocations),
       reorderLocations: jest.fn(),
       setPrimaryLocation: jest.fn(),
       deleteLocation: jest.fn().mockReturnValue(of(true)),
       addLocation: jest.fn().mockReturnValue(of(mockLocations[0])),
-      updateLocationName: jest.fn()
+      updateLocationName: jest.fn(),
+      startAlertMonitoring: jest.fn(),
+      stopAlertMonitoring: jest.fn(),
+      startAllAlertMonitoring: jest.fn(),
+      stopAllAlertMonitoring: jest.fn(),
+      getAlertsForLocation: jest.fn().mockReturnValue({ 
+        set: jest.fn(), 
+        update: jest.fn(),
+        asReadonly: jest.fn().mockReturnValue(jest.fn().mockReturnValue([])),
+        '()': jest.fn().mockReturnValue([])
+      })
     };
     
     mockSnackBar = {

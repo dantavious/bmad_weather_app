@@ -1,9 +1,44 @@
 .map-context-menu {
-  .mat-mdc-menu-item {
+  background: var(--mat-app-surface);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+  
+  .menu-content {
+    padding: 8px 0;
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    border-radius: 0;
+    
+    &:hover:not(:disabled) {
+      background: var(--mat-app-surface-variant);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
     mat-icon {
       margin-right: 12px;
       color: var(--mat-app-primary);
     }
+    
+    span {
+      flex: 1;
+    }
+  }
+  
+  .mat-divider {
+    margin: 8px 0;
   }
   
   .coordinates-display {

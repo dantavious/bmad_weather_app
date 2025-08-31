@@ -78,7 +78,7 @@ describe('AlertService', () => {
     });
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     expect(req.request.method).toBe('GET');
     
@@ -98,7 +98,7 @@ describe('AlertService', () => {
     
     // Initial request
     let req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     
@@ -107,7 +107,7 @@ describe('AlertService', () => {
     
     // Second request after 5 minutes
     req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     
@@ -118,7 +118,7 @@ describe('AlertService', () => {
     service.fetchAlerts('loc-1', 40.7128, -74.0060).subscribe();
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     tick();
@@ -138,7 +138,7 @@ describe('AlertService', () => {
     
     // First fetch
     let req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     tick();
@@ -148,7 +148,7 @@ describe('AlertService', () => {
     // Second fetch with same alerts
     tick(5 * 60 * 1000);
     req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     tick();
@@ -165,7 +165,7 @@ describe('AlertService', () => {
     service.fetchAlerts('loc-1', 40.7128, -74.0060).subscribe();
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(watchOnlyAlerts);
     tick();
@@ -190,7 +190,7 @@ describe('AlertService', () => {
     service.fetchAlerts('loc-1', 40.7128, -74.0060).subscribe();
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     tick();
@@ -213,7 +213,7 @@ describe('AlertService', () => {
     service.fetchAlerts('loc-1', 40.7128, -74.0060).subscribe();
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     tick();
@@ -229,7 +229,7 @@ describe('AlertService', () => {
     });
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     
     req.error(new ErrorEvent('Network error'));
@@ -247,7 +247,7 @@ describe('AlertService', () => {
     });
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/historical/loc-1`
+      `${environment.apiUrl}/alerts/historical/loc-1`
     );
     expect(req.request.method).toBe('GET');
     
@@ -266,7 +266,7 @@ describe('AlertService', () => {
     });
     
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req.flush(mockAlerts);
     tick();
@@ -284,12 +284,12 @@ describe('AlertService', () => {
     service.fetchAlerts('loc-2', 41.8781, -87.6298).subscribe();
     
     const req1 = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-1?lat=40.7128&lon=-74.006`
+      `${environment.apiUrl}/alerts/loc-1?lat=40.7128&lon=-74.006`
     );
     req1.flush(mockAlerts);
     
     const req2 = httpMock.expectOne(
-      `${environment.apiUrl}/api/alerts/loc-2?lat=41.8781&lon=-87.6298`
+      `${environment.apiUrl}/alerts/loc-2?lat=41.8781&lon=-87.6298`
     );
     req2.flush([]);
     

@@ -9,6 +9,8 @@ import { SearchModule } from './search/search.module';
 import { GeocodeModule } from './geocode/geocode.module';
 import { PrecipitationModule } from './precipitation/precipitation.module';
 import { NwsModule } from './nws/nws.module';
+import { ActivitiesModule } from './activities/activities.module';
+import { SolarModule } from './solar/solar.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { NwsModule } from './nws/nws.module';
     GeocodeModule,
     PrecipitationModule,
     NwsModule,
+    ActivitiesModule,
+    SolarModule,
   ],
   controllers: [AppController],
   providers: [AppService],

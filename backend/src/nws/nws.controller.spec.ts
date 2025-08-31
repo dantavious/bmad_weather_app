@@ -54,54 +54,70 @@ describe('NwsController', () => {
     it('should return active alerts for valid coordinates', async () => {
       jest.spyOn(service, 'fetchActiveAlerts').mockResolvedValue(mockAlerts);
 
-      const result = await controller.getActiveAlerts('loc-1', '40.7128', '-74.0060');
+      const result = await controller.getActiveAlerts(
+        'loc-1',
+        '40.7128',
+        '-74.0060',
+      );
 
       expect(result).toEqual(mockAlerts);
-      expect(service.fetchActiveAlerts).toHaveBeenCalledWith(40.7128, -74.0060, 'loc-1');
+      expect(service.fetchActiveAlerts).toHaveBeenCalledWith(
+        40.7128,
+        -74.006,
+        'loc-1',
+      );
     });
 
     it('should throw BadRequest for invalid latitude', async () => {
       await expect(
-        controller.getActiveAlerts('loc-1', 'invalid', '-74.0060')
+        controller.getActiveAlerts('loc-1', 'invalid', '-74.0060'),
       ).rejects.toThrow(
-        new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST)
+        new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST),
       );
     });
 
     it('should throw BadRequest for invalid longitude', async () => {
       await expect(
-        controller.getActiveAlerts('loc-1', '40.7128', 'invalid')
+        controller.getActiveAlerts('loc-1', '40.7128', 'invalid'),
       ).rejects.toThrow(
-        new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST)
+        new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST),
       );
     });
 
     it('should throw BadRequest for missing coordinates', async () => {
       await expect(
-        controller.getActiveAlerts('loc-1', undefined, undefined)
+        controller.getActiveAlerts('loc-1', undefined, undefined),
       ).rejects.toThrow(
-        new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST)
+        new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST),
       );
     });
 
     it('should handle service errors gracefully', async () => {
-      jest.spyOn(service, 'fetchActiveAlerts').mockRejectedValue(
-        new Error('Service error')
-      );
+      jest
+        .spyOn(service, 'fetchActiveAlerts')
+        .mockRejectedValue(new Error('Service error'));
 
       await expect(
-        controller.getActiveAlerts('loc-1', '40.7128', '-74.0060')
+        controller.getActiveAlerts('loc-1', '40.7128', '-74.0060'),
       ).rejects.toThrow(
-        new HttpException('Failed to fetch weather alerts', HttpStatus.INTERNAL_SERVER_ERROR)
+        new HttpException(
+          'Failed to fetch weather alerts',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
 
     it('should preserve HttpException from service', async () => {
-      const serviceException = new HttpException('Custom error', HttpStatus.SERVICE_UNAVAILABLE);
-      jest.spyOn(service, 'fetchActiveAlerts').mockRejectedValue(serviceException);
+      const serviceException = new HttpException(
+        'Custom error',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+      jest
+        .spyOn(service, 'fetchActiveAlerts')
+        .mockRejectedValue(serviceException);
 
       await expect(
-        controller.getActiveAlerts('loc-1', '40.7128', '-74.0060')
+        controller.getActiveAlerts('loc-1', '40.7128', '-74.0060'),
       ).rejects.toThrow(serviceException);
     });
 
@@ -117,10 +133,18 @@ describe('NwsController', () => {
     it('should handle coordinates with many decimal places', async () => {
       jest.spyOn(service, 'fetchActiveAlerts').mockResolvedValue(mockAlerts);
 
-      const result = await controller.getActiveAlerts('loc-1', '40.71289999', '-74.00609999');
+      const result = await controller.getActiveAlerts(
+        'loc-1',
+        '40.71289999',
+        '-74.00609999',
+      );
 
       expect(result).toEqual(mockAlerts);
-      expect(service.fetchActiveAlerts).toHaveBeenCalledWith(40.71289999, -74.00609999, 'loc-1');
+      expect(service.fetchActiveAlerts).toHaveBeenCalledWith(
+        40.71289999,
+        -74.00609999,
+        'loc-1',
+      );
     });
   });
 
@@ -140,7 +164,9 @@ describe('NwsController', () => {
       const result = await controller.getHistoricalAlerts('unknown-location');
 
       expect(result).toEqual([]);
-      expect(service.getHistoricalAlerts).toHaveBeenCalledWith('unknown-location');
+      expect(service.getHistoricalAlerts).toHaveBeenCalledWith(
+        'unknown-location',
+      );
     });
 
     it('should handle service errors gracefully', async () => {
@@ -148,10 +174,11 @@ describe('NwsController', () => {
         throw new Error('Service error');
       });
 
-      await expect(
-        controller.getHistoricalAlerts('loc-1')
-      ).rejects.toThrow(
-        new HttpException('Failed to fetch historical alerts', HttpStatus.INTERNAL_SERVER_ERROR)
+      await expect(controller.getHistoricalAlerts('loc-1')).rejects.toThrow(
+        new HttpException(
+          'Failed to fetch historical alerts',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
 

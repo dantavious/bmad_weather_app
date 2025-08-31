@@ -6,6 +6,8 @@ import {
 } from '@angular/common/http/testing';
 import { LocationService } from './location.service';
 import { StorageService } from './storage.service';
+import { AlertService } from './alert.service';
+import { NotificationService } from './notification.service';
 import { WeatherLocation } from '@shared/models/location.model';
 import { environment } from '../../../environments/environment';
 import { importProvidersFrom } from '@angular/core';
@@ -13,11 +15,14 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HighContrastModeDetector } from '@angular/cdk/a11y';
 import { PlatformModule } from '@angular/cdk/platform';
 import { LayoutModule } from '@angular/cdk/layout';
+import { of } from 'rxjs';
 
 describe('LocationService', () => {
   let service: LocationService;
   let httpMock: HttpTestingController;
   let storageService: jest.Mocked<StorageService>;
+  let mockAlertService: any;
+  let mockNotificationService: any;
 
   const mockLocations: WeatherLocation[] = [
     {
@@ -52,12 +57,29 @@ describe('LocationService', () => {
     const spy = {
       loadLocations: jest.fn().mockResolvedValue(mockLocations),
       saveLocations: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockAlertService = {
+      fetchAlerts: jest.fn().mockReturnValue(of([])),
+      clearAlerts: jest.fn(),
+      clearAllAlerts: jest.fn(),
+    };
+
+    mockNotificationService = {
+      notificationPermission: { set: jest.fn() },
+      preferences: { set: jest.fn() },
+      requestPermission: jest.fn().mockResolvedValue('granted'),
+      sendNotification: jest.fn(),
     };
 
     TestBed.configureTestingModule({
       providers: [
         LocationService,
         { provide: StorageService, useValue: spy },
+        { provide: AlertService, useValue: mockAlertService },
+        { provide: NotificationService, useValue: mockNotificationService },
         provideHttpClient(),
         provideHttpClientTesting(),
         importProvidersFrom(NoopAnimationsModule, PlatformModule, LayoutModule),

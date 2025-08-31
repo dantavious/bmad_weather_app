@@ -459,34 +459,54 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         this.longPressTimer = window.setTimeout(() => {
           this.isLongPress = true;
           
-          // Convert touch coordinates to lat/lng
+          // Convert touch coordinates to lat/lng using Google Maps API
           if (this.googleMap) {
-            const bounds = this.googleMap.getBounds();
             const projection = this.googleMap.getProjection();
+            const bounds = this.googleMap.getBounds();
             
-            if (bounds && projection) {
+            if (projection && bounds) {
               // Get map container bounds
               const rect = mapDiv.getBoundingClientRect();
               
-              // Calculate relative position within map
+              // Calculate relative position within map container
               const x = touchStartCoords.x - rect.left;
               const y = touchStartCoords.y - rect.top;
               
-              // Convert to world coordinates
+              // Get map dimensions and bounds
+              const mapWidth = rect.width;
+              const mapHeight = rect.height;
               const ne = bounds.getNorthEast();
               const sw = bounds.getSouthWest();
               
-              // Calculate lat/lng based on position
-              const lat = ne.lat() - (y / rect.height) * (ne.lat() - sw.lat());
-              const lng = sw.lng() + (x / rect.width) * (ne.lng() - sw.lng());
+              // Convert pixel coordinates to world coordinates
+              const worldCoordNE = projection.fromLatLngToPoint(ne);
+              const worldCoordSW = projection.fromLatLngToPoint(sw);
               
-              // Show context menu at long-press location
-              this.showContextMenu(lat, lng, {
-                domEvent: {
-                  clientX: touchStartCoords.x,
-                  clientY: touchStartCoords.y
+              if (worldCoordNE && worldCoordSW) {
+                // Calculate the world coordinates per pixel
+                const worldPerPixelX = (worldCoordNE.x - worldCoordSW.x) / mapWidth;
+                const worldPerPixelY = (worldCoordNE.y - worldCoordSW.y) / mapHeight;
+                
+                // Calculate world coordinates for the touch point
+                const worldX = worldCoordSW.x + (x * worldPerPixelX);
+                const worldY = worldCoordNE.y - ((mapHeight - y) * worldPerPixelY);
+                
+                // Convert world coordinates back to lat/lng
+                const latLng = projection.fromPointToLatLng(new google.maps.Point(worldX, worldY));
+                
+                if (latLng) {
+                  const lat = latLng.lat();
+                  const lng = latLng.lng();
+                  
+                  // Show context menu at long-press location
+                  this.showContextMenu(lat, lng, {
+                    domEvent: {
+                      clientX: touchStartCoords.x,
+                      clientY: touchStartCoords.y
+                    }
+                  } as any);
                 }
-              } as any);
+              }
             }
           }
         }, 500); // 500ms for long press

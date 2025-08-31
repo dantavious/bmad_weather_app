@@ -17,6 +17,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { LocationService } from '../../core/services/location.service';
 import { WeatherCardComponent } from './components/weather-card/weather-card.component';
 import { AlertPanelComponent } from './components/alert-panel/alert-panel.component';
+import { ActivitySettingsComponent } from './components/activity-settings/activity-settings.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { WeatherLocation } from '@shared/models/location.model';
 import { WeatherAlert } from './components/alert-badge/alert-badge.component';
@@ -37,7 +38,8 @@ import { WeatherAlert } from './components/alert-badge/alert-badge.component';
     MatTooltipModule,
     FormsModule,
     WeatherCardComponent,
-    AlertPanelComponent
+    AlertPanelComponent,
+    ActivitySettingsComponent
   ],
   animations: [
     trigger('listAnimation', [
@@ -57,11 +59,25 @@ import { WeatherAlert } from './components/alert-badge/alert-badge.component';
   template: `
     <div class="dashboard-container">
       <header class="dashboard-header">
-        <h1>Weather Dashboard</h1>
+        <div class="header-content">
+          <h1>Weather Dashboard</h1>
+          <button mat-icon-button 
+                  (click)="toggleActivitySettings()"
+                  matTooltip="Activity Settings"
+                  class="settings-button">
+            <mat-icon>settings</mat-icon>
+          </button>
+        </div>
         @if (loading()) {
           <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         }
       </header>
+      
+      @if (showActivitySettings()) {
+        <div class="settings-panel">
+          <app-activity-settings></app-activity-settings>
+        </div>
+      }
       
       @if (error()) {
         <mat-card class="error-card">
@@ -170,11 +186,38 @@ import { WeatherAlert } from './components/alert-badge/alert-badge.component';
       margin-bottom: 32px;
     }
     
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
     .dashboard-header h1 {
       font-size: 2.5rem;
       font-weight: 300;
-      margin: 0 0 16px 0;
+      margin: 0;
       color: var(--mdc-theme-on-surface);
+    }
+    
+    .settings-button {
+      color: var(--mdc-theme-on-surface);
+    }
+    
+    .settings-panel {
+      margin-bottom: 24px;
+      animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     mat-progress-bar {
@@ -409,6 +452,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedLocationAlerts = signal<WeatherAlert[]>([]);
   showAlertPanel = signal(false);
   
+  // Activity settings state
+  showActivitySettings = signal(false);
+  
   ngOnInit() {
     this.loadLocations();
     this.subscribeToLocationUpdates();
@@ -641,5 +687,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   closeAlertPanel() {
     this.showAlertPanel.set(false);
     this.selectedLocationAlerts.set([]);
+  }
+  
+  toggleActivitySettings() {
+    this.showActivitySettings.update(show => !show);
   }
 }

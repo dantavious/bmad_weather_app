@@ -8,7 +8,10 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { PrecipitationMonitorService, PrecipitationAlert } from './precipitation-monitor.service';
+import {
+  PrecipitationMonitorService,
+  PrecipitationAlert,
+} from './precipitation-monitor.service';
 
 interface LocationCheckDto {
   locations: Array<{
@@ -35,10 +38,7 @@ export class PrecipitationController {
       const longitude = parseFloat(lon);
 
       if (isNaN(latitude) || isNaN(longitude)) {
-        throw new HttpException(
-          'Invalid coordinates',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new HttpException('Invalid coordinates', HttpStatus.BAD_REQUEST);
       }
 
       const alert = await this.precipitationService.checkPrecipitation(

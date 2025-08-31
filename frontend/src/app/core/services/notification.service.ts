@@ -241,4 +241,54 @@ export class NotificationService {
     
     await this.showPrecipitationAlert(test);
   }
+
+  getAlertSettings(): { enabled: boolean; quietHours: { enabled: boolean; start: string; end: string } } {
+    const prefs = this.preferences();
+    return {
+      enabled: prefs.enabled,
+      quietHours: {
+        enabled: prefs.quietHoursEnabled,
+        start: prefs.quietHoursStart,
+        end: prefs.quietHoursEnd
+      }
+    };
+  }
+
+  async sendNotification(title: string, body: string, options?: NotificationOptions): Promise<void> {
+    // Check if notifications are enabled
+    if (!this.preferences().enabled) {
+      console.log('Notifications disabled');
+      return;
+    }
+
+    // Check quiet hours
+    if (this.isInQuietHours()) {
+      console.log('In quiet hours, suppressing notification');
+      return;
+    }
+
+    // Check browser support and permission
+    if (!('Notification' in window)) {
+      console.warn('Notifications not supported');
+      return;
+    }
+
+    if (Notification.permission !== 'granted') {
+      console.warn('Notification permission not granted');
+      return;
+    }
+
+    try {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        // Use service worker to show notification
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(title, options || {});
+      } else {
+        // Fallback to direct notification
+        new Notification(title, options || { body });
+      }
+    } catch (error) {
+      console.error('Failed to show notification:', error);
+    }
+  }
 }

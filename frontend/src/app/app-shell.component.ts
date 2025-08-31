@@ -11,6 +11,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { ThemeService } from './core/services/theme.service';
 import { LoadingService } from './core/services/loading.service';
+import { InstallBannerComponent } from './shared/components/install-banner/install-banner.component';
+import { OfflineIndicatorComponent } from './shared/components/offline-indicator/offline-indicator.component';
 
 @Component({
   selector: 'app-shell',
@@ -26,7 +28,9 @@ import { LoadingService } from './core/services/loading.service';
     MatButtonModule,
     MatListModule,
     MatProgressBarModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    InstallBannerComponent,
+    OfflineIndicatorComponent
   ],
   template: `
     <mat-sidenav-container class="sidenav-container">
@@ -55,6 +59,10 @@ import { LoadingService } from './core/services/loading.service';
             <mat-icon matListItemIcon>notifications</mat-icon>
             <span matListItemTitle>Alert Settings</span>
           </a>
+          <a mat-list-item routerLink="/solar" routerLinkActive="active" aria-label="Solar Calculator">
+            <mat-icon matListItemIcon>solar_power</mat-icon>
+            <span matListItemTitle>Solar Calculator</span>
+          </a>
           <a mat-list-item href="#" aria-label="Settings">
             <mat-icon matListItemIcon>settings</mat-icon>
             <span matListItemTitle>Settings</span>
@@ -73,7 +81,7 @@ import { LoadingService } from './core/services/loading.service';
               <mat-icon>menu</mat-icon>
             </button>
           }
-          <span>DatDude Weather</span>
+          <span>BMad Weather Dashboard</span>
           <span class="spacer"></span>
           <button 
             mat-icon-button
@@ -90,6 +98,8 @@ import { LoadingService } from './core/services/loading.service';
           </button>
         </mat-toolbar>
         
+        <app-offline-indicator />
+        
         @if (isLoading()) {
           <mat-progress-bar 
             mode="indeterminate"
@@ -100,6 +110,7 @@ import { LoadingService } from './core/services/loading.service';
         <main class="content">
           <router-outlet />
         </main>
+        <app-install-banner />
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
